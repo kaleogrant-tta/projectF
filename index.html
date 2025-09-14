@@ -68,6 +68,15 @@
       margin: 0 30px 30px 30px;
       border-collapse: collapse;
     }
+
+    /* Style for the logo in the header. It scales responsively so it doesn't
+       overflow the header area on smaller screens. */
+    .logo {
+      max-width: 300px;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
     th, td {
       padding: 8px;
       text-align: left;
@@ -143,7 +152,8 @@
 </head>
 <body>
   <header>
-    <h1>Ultimate CRM Dashboard</h1>
+    <!-- Replace plain text header with a logo image for a more polished look -->
+    <img src="project-fusion-logo.png" alt="Project Fusion logo" class="logo">
   </header>
 
   <div class="controls">
