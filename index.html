@@ -110,6 +110,35 @@
       cursor: pointer;
       font-size: 18px;
     }
+
+    /* Container for table to enable horizontal scroll on small screens */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    /* Responsive styles for smaller screens */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 22px;
+      }
+      .controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .controls select, .controls button {
+        margin-bottom: 8px;
+      }
+      .kpi-container {
+        flex-direction: column;
+      }
+      .kpi {
+        min-width: unset;
+      }
+      table {
+        font-size: 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -132,10 +161,12 @@
   </div>
 
   <div class="kpi-container" id="kpi-container"></div>
-  <table id="heatmap-table">
-    <thead id="table-head"></thead>
-    <tbody id="table-body"></tbody>
-  </table>
+  <div class="table-container">
+    <table id="heatmap-table">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
 
   <div class="overlay" id="overlay">
     <span class="overlay-close" id="overlay-close">×</span>
@@ -4752,20 +4783,20 @@
       "brand": "Heavy Hitters",
       "revenue": 343894.45999999996,
       "units": 7136,
-      "avg_unit_cost": null,
-      "ppi_index": null,
+      "avg_unit_cost": 27.84075471698113,
+      "ppi_index": 0.5870114870199156,
       "sell_through_pct": 0.9027190953809606,
-      "bei": null,
+      "bei": 1.537821857565002,
       "revenue_share": 0.05065531878117749
     },
     {
       "brand": "Find.",
       "revenue": 245762.8,
       "units": 2021,
-      "avg_unit_cost": null,
-      "ppi_index": null,
+      "avg_unit_cost": 65.08782258064515,
+      "ppi_index": 1.3723514289879817,
       "sell_through_pct": 0.8325547483415425,
-      "bei": null,
+      "bei": 0.6066629368801667,
       "revenue_share": 0.036200620907224756
     },
     {
@@ -5502,10 +5533,10 @@
       "brand": "&Shine",
       "revenue": 2166.0,
       "units": 55,
-      "avg_unit_cost": null,
-      "ppi_index": null,
+      "avg_unit_cost": 23.43416666666667,
+      "ppi_index": 0.49410029152989005,
       "sell_through_pct": 0.6875,
-      "bei": null,
+      "bei": 1.391417920178277,
       "revenue_share": 0.0003190496889075516
     },
     {
