@@ -4752,20 +4752,20 @@
       "brand": "Heavy Hitters",
       "revenue": 343894.45999999996,
       "units": 7136,
-      "avg_unit_cost": NaN,
-      "ppi_index": NaN,
+      "avg_unit_cost": null,
+      "ppi_index": null,
       "sell_through_pct": 0.9027190953809606,
-      "bei": NaN,
+      "bei": null,
       "revenue_share": 0.05065531878117749
     },
     {
       "brand": "Find.",
       "revenue": 245762.8,
       "units": 2021,
-      "avg_unit_cost": NaN,
-      "ppi_index": NaN,
+      "avg_unit_cost": null,
+      "ppi_index": null,
       "sell_through_pct": 0.8325547483415425,
-      "bei": NaN,
+      "bei": null,
       "revenue_share": 0.036200620907224756
     },
     {
@@ -5502,10 +5502,10 @@
       "brand": "&Shine",
       "revenue": 2166.0,
       "units": 55,
-      "avg_unit_cost": NaN,
-      "ppi_index": NaN,
+      "avg_unit_cost": null,
+      "ppi_index": null,
       "sell_through_pct": 0.6875,
-      "bei": NaN,
+      "bei": null,
       "revenue_share": 0.0003190496889075516
     },
     {
@@ -5632,8 +5632,17 @@
       const metrics = ['ppi_index', 'sell_through_pct', 'revenue_share', 'bei'];
       const ranges = {};
       metrics.forEach(m => {
-        const vals = items.map(i => i[m]);
-        ranges[m] = {min: Math.min(...vals), max: Math.max(...vals)};
+        // Filter out NaN values when computing ranges
+        const vals = items.map(i => {
+          const v = i[m];
+          return (typeof v === 'number' && !isNaN(v)) ? v : null;
+        }).filter(v => v !== null);
+        // If no valid numbers, set default range 0-1
+        if (vals.length === 0) {
+          ranges[m] = { min: 0, max: 1 };
+        } else {
+          ranges[m] = {min: Math.min(...vals), max: Math.max(...vals)};
+        }
       });
       return ranges;
     }
@@ -5662,6 +5671,28 @@
       }
       // Sort by BEI descending
       items.sort((a,b) => (b.bei || 0) - (a.bei || 0));
+      // Compute derived metrics for products if missing
+      // Compute total revenue for revenue share calculations (entire dataset, not filtered)
+      let totalRevenueAll;
+      if (currentDataset === 'products') {
+        totalRevenueAll = data.products.reduce((acc, p) => acc + (p.revenue || 0), 0);
+        items.forEach(item => {
+          // Compute revenue share if not present
+          if (typeof item.revenue_share !== 'number' || isNaN(item.revenue_share)) {
+            item.revenue_share = totalRevenueAll ? item.revenue / totalRevenueAll : null;
+          }
+          // Compute BEI if not present
+          if (typeof item.bei !== 'number' || isNaN(item.bei)) {
+            const ppi = item.ppi_index;
+            const st = item.sell_through_pct;
+            if (typeof ppi === 'number' && !isNaN(ppi) && ppi !== 0 && typeof st === 'number' && !isNaN(st)) {
+              item.bei = st / ppi;
+            } else {
+              item.bei = null;
+            }
+          }
+        });
+      }
       // Compute metric ranges
       const ranges = computeMetricRanges(items);
       // Update KPI cards
@@ -5708,12 +5739,22 @@
         tr.appendChild(nameTd);
         // Metric cells
         ['ppi_index','sell_through_pct','revenue_share','bei'].forEach(key => {
-          const val=item[key];
-          const td=document.createElement('td');
-          td.className='heatmap-cell';
-          const range=ranges[key];
-          td.style.background=colorScale(val, range.min, range.max, key==='ppi_index');
-          td.textContent=(key==='sell_through_pct' || key==='revenue_share') ? (val*100).toFixed(1)+'%' : val.toFixed(3);
+          const val = item[key];
+          const td = document.createElement('td');
+          td.className = 'heatmap-cell';
+          const range = ranges[key];
+          // Determine display text and color
+          if (typeof val !== 'number' || isNaN(val)) {
+            td.style.background = '#f0f0f0';
+            td.textContent = 'N/A';
+          } else {
+            td.style.background = colorScale(val, range.min, range.max, key === 'ppi_index');
+            if (key === 'sell_through_pct' || key === 'revenue_share') {
+              td.textContent = (val * 100).toFixed(1) + '%';
+            } else {
+              td.textContent = val.toFixed(3);
+            }
+          }
           tr.appendChild(td);
         });
         tr.addEventListener('mouseenter', () => showOverlay(item));
@@ -5736,10 +5777,11 @@
         lines.push(`<strong>Units Sold:</strong> ${formatNumber(item.units)}`);
         lines.push(`<strong>Avg Unit Cost:</strong> $${item.avg_unit_cost.toFixed(2)}`);
       }
-      lines.push(`<strong>PPI:</strong> ${item.ppi_index.toFixed(3)}`);
-      lines.push(`<strong>Sell‑Through:</strong> ${(item.sell_through_pct*100).toFixed(1)}%`);
-      lines.push(`<strong>Revenue Share:</strong> ${(item.revenue_share*100).toFixed(1)}%`);
-      lines.push(`<strong>BEI:</strong> ${item.bei.toFixed(3)}`);
+      // Handle NaN values gracefully
+      lines.push(`<strong>PPI:</strong> ${isNaN(item.ppi_index) ? 'N/A' : item.ppi_index.toFixed(3)}`);
+      lines.push(`<strong>Sell‑Through:</strong> ${isNaN(item.sell_through_pct) ? 'N/A' : (item.sell_through_pct * 100).toFixed(1) + '%'}`);
+      lines.push(`<strong>Revenue Share:</strong> ${isNaN(item.revenue_share) ? 'N/A' : (item.revenue_share * 100).toFixed(1) + '%'}`);
+      lines.push(`<strong>BEI:</strong> ${isNaN(item.bei) ? 'N/A' : item.bei.toFixed(3)}`);
       overlayContent.innerHTML=lines.join('<br>');
       overlay.style.display='block';
     }
@@ -5751,6 +5793,8 @@
       currentDataset=datasetSelect.value;
       if (currentDataset==='products') {
         categoryFilter.style.display='inline-block';
+      // Refresh category options when switching to products
+      if (productData && productData.products) updateCategories(productData);
       } else {
         categoryFilter.style.display='none';
       }
