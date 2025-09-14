@@ -168,8 +168,11 @@
     <select id="category-filter">
       <option value="all">All Categories</option>
     </select>
-    <button id="zoom-in">Zoom In</button>
-    <button id="zoom-out">Zoom Out</button>
+    <label for="sort-select">Sort:</label>
+    <select id="sort-select">
+      <option value="desc" selected>Highest to lowest</option>
+      <option value="asc">Lowest to highest</option>
+    </select>
   </div>
 
   <div class="kpi-container" id="kpi-container"></div>
@@ -5643,7 +5646,8 @@
     const productData = JSON.parse(document.getElementById('product-data').textContent || '{}');
     const brandData = JSON.parse(document.getElementById('brand-data').textContent || '{}');
     let currentDataset = 'products';
-    let zoomLevel = 1;
+    // Track the selected sort order for BEI (descending by default)
+    let sortOrder = 'desc';
 
     const datasetSelect = document.getElementById('dataset-select');
     const categoryFilter = document.getElementById('category-filter');
@@ -5653,6 +5657,7 @@
     const overlay = document.getElementById('overlay');
     const overlayContent = document.getElementById('overlay-content');
     const overlayClose = document.getElementById('overlay-close');
+    const sortSelect = document.getElementById('sort-select');
 
     function formatNumber(num) {
       return num.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
@@ -5712,8 +5717,12 @@
           items = items.filter(i => i.category === cat);
         }
       }
-      // Sort by BEI descending
-      items.sort((a,b) => (b.bei || 0) - (a.bei || 0));
+      // Sort by BEI based on the selected sort order
+      items.sort((a, b) => {
+        const va = a.bei || 0;
+        const vb = b.bei || 0;
+        return sortOrder === 'desc' ? vb - va : va - vb;
+      });
       // Compute derived metrics for products if missing
       // Compute total revenue for revenue share calculations (entire dataset, not filtered)
       let totalRevenueAll;
@@ -5844,13 +5853,9 @@
       render();
     });
     categoryFilter.addEventListener('change', render);
-    document.getElementById('zoom-in').addEventListener('click', () => {
-      zoomLevel=Math.min(2, zoomLevel+0.1);
-      tableBody.style.transform=`scale(${zoomLevel})`;
-    });
-    document.getElementById('zoom-out').addEventListener('click', () => {
-      zoomLevel=Math.max(0.5, zoomLevel-0.1);
-      tableBody.style.transform=`scale(${zoomLevel})`;
+    sortSelect.addEventListener('change', () => {
+      sortOrder = sortSelect.value;
+      render();
     });
     // Initialize with default dataset and categories
     (function init() {
