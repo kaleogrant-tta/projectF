@@ -1,0 +1,5775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultimate CRM Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #fdf6f9, #f5fbff);
+      color: #333;
+    }
+    header {
+      background: #f7fafc;
+      padding: 20px 30px;
+      border-bottom: 1px solid #eee;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      color: #d97324;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin: 15px 30px;
+    }
+    select, button {
+      padding: 6px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+    }
+    button:hover {
+      cursor: pointer;
+      background: #f0f0f0;
+    }
+    .kpi-container {
+      display: flex;
+      gap: 20px;
+      margin: 15px 30px;
+      flex-wrap: wrap;
+    }
+    .kpi {
+      background: #fff;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      flex: 1;
+      min-width: 150px;
+    }
+    .kpi-title {
+      font-size: 12px;
+      color: #666;
+    }
+    .kpi-value {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    table {
+      width: calc(100% - 60px);
+      margin: 0 30px 30px 30px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #f7fafc;
+      z-index: 1;
+    }
+    .heatmap-cell {
+      text-align: center;
+      color: #333;
+    }
+    .row-name {
+      white-space: nowrap;
+    }
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 10;
+      max-width: 90%;
+      display: none;
+    }
+    .overlay h3 {
+      margin-top: 0;
+    }
+    .overlay-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ultimate CRM Dashboard</h1>
+  </header>
+
+  <div class="controls">
+    <label for="dataset-select">View:</label>
+    <select id="dataset-select">
+      <option value="products" selected>Products</option>
+      <option value="brands">Brands</option>
+    </select>
+    <label for="category-filter">Category:</label>
+    <select id="category-filter">
+      <option value="all">All Categories</option>
+    </select>
+    <button id="zoom-in">Zoom In</button>
+    <button id="zoom-out">Zoom Out</button>
+  </div>
+
+  <div class="kpi-container" id="kpi-container"></div>
+  <table id="heatmap-table">
+    <thead id="table-head"></thead>
+    <tbody id="table-body"></tbody>
+  </table>
+
+  <div class="overlay" id="overlay">
+    <span class="overlay-close" id="overlay-close">×</span>
+    <div id="overlay-content"></div>
+  </div>
+
+  <!-- Embedded datasets -->
+  <!-- Embedded datasets: the JSON below should be replaced with actual data. -->
+  <script id="product-data" type="application/json">
+{
+  "meta": {
+    "title": "Product CRM data without NaN",
+    "as_of": "2025-09-14",
+    "currency": "USD"
+  },
+  "products": [
+    {
+      "product_name": "Lighter",
+      "category": "Accessories",
+      "revenue": 17110.07,
+      "units": 6474,
+      "avg_unit_cost": 1.6199999999999997,
+      "ppi_index": 0.11069115809264507,
+      "sell_through_pct": 0.758968347010551,
+      "units_on_hand": 2056
+    },
+    {
+      "product_name": "Rolling Papers | Black",
+      "category": "Accessories",
+      "revenue": 5025.79,
+      "units": 920,
+      "avg_unit_cost": 3.4400000000000066,
+      "ppi_index": 0.2350478912584567,
+      "sell_through_pct": 0.414041404140414,
+      "units_on_hand": 1302
+    },
+    {
+      "product_name": "Battery | 510",
+      "category": "Accessories",
+      "revenue": 24317.5,
+      "units": 2004,
+      "avg_unit_cost": 5.1499999999999995,
+      "ppi_index": 0.35188855813402603,
+      "sell_through_pct": 0.795553791186979,
+      "units_on_hand": 515
+    },
+    {
+      "product_name": "Lighter",
+      "category": "Accessories",
+      "revenue": 69.0,
+      "units": 23,
+      "avg_unit_cost": 1.1999999999999995,
+      "ppi_index": 0.08199345043899633,
+      "sell_through_pct": 0.046,
+      "units_on_hand": 477
+    },
+    {
+      "product_name": "Tta Jet Pocket Lighter",
+      "category": "Accessories",
+      "revenue": 20349.78,
+      "units": 5359,
+      "avg_unit_cost": 1.5841462959507364,
+      "ppi_index": 0.10824135067096365,
+      "sell_through_pct": 0.9185807336304422,
+      "units_on_hand": 475
+    },
+    {
+      "product_name": "Ice Cream Cake | Single",
+      "category": "Pre-Rolls",
+      "revenue": 12372.5,
+      "units": 886,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.7174089068825911,
+      "units_on_hand": 349
+    },
+    {
+      "product_name": "Doobies | Blue Dream | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 27662.63,
+      "units": 2682,
+      "avg_unit_cost": 6.6501118568232656,
+      "ppi_index": 0.4543880141218504,
+      "sell_through_pct": 0.9091525423728813,
+      "units_on_hand": 268
+    },
+    {
+      "product_name": "Lemon",
+      "category": "Accessories",
+      "revenue": 2754.9,
+      "units": 363,
+      "avg_unit_cost": 2.899999999999997,
+      "ppi_index": 0.19815083856090765,
+      "sell_through_pct": 0.5960591133004927,
+      "units_on_hand": 246
+    },
+    {
+      "product_name": "Doobies | Super Silver Haze  | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 30627.95,
+      "units": 2959,
+      "avg_unit_cost": 6.633845893883068,
+      "ppi_index": 0.4532765954333674,
+      "sell_through_pct": 0.928168130489335,
+      "units_on_hand": 229
+    },
+    {
+      "product_name": "Lilac Diesel Gmo | Single",
+      "category": "Pre-Rolls",
+      "revenue": 1310.5,
+      "units": 132,
+      "avg_unit_cost": 5.0,
+      "ppi_index": 0.3416393768291515,
+      "sell_through_pct": 0.37606837606837606,
+      "units_on_hand": 219
+    },
+    {
+      "product_name": "Dark Heart Genetics X Titan Express",
+      "category": "Flower",
+      "revenue": 15485.0,
+      "units": 387,
+      "avg_unit_cost": 19.953488372093023,
+      "ppi_index": 1.3633794666019163,
+      "sell_through_pct": 0.6460767946577629,
+      "units_on_hand": 212
+    },
+    {
+      "product_name": "Elements King Size Rice Papers",
+      "category": "Accessories",
+      "revenue": 1427.95,
+      "units": 494,
+      "avg_unit_cost": 1.3199999999999994,
+      "ppi_index": 0.09019279548289597,
+      "sell_through_pct": 0.6997167138810199,
+      "units_on_hand": 212
+    },
+    {
+      "product_name": "Up | Honeycrisp | 2:1 | Single",
+      "category": "Beverages",
+      "revenue": 18969.68,
+      "units": 3824,
+      "avg_unit_cost": 2.424686192468619,
+      "ppi_index": 0.16567365596024544,
+      "sell_through_pct": 0.9491188880615538,
+      "units_on_hand": 205
+    },
+    {
+      "product_name": "Mint",
+      "category": "Accessories",
+      "revenue": 3001.11,
+      "units": 409,
+      "avg_unit_cost": 2.9000000000000026,
+      "ppi_index": 0.19815083856090807,
+      "sell_through_pct": 0.6715927750410509,
+      "units_on_hand": 200
+    },
+    {
+      "product_name": "Pluto | Single",
+      "category": "Pre-Rolls",
+      "revenue": 5781.9,
+      "units": 703,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.7811111111111111,
+      "units_on_hand": 197
+    },
+    {
+      "product_name": "Strawberry Magic",
+      "category": "Accessories",
+      "revenue": 2966.75,
+      "units": 408,
+      "avg_unit_cost": 2.9000000000000012,
+      "ppi_index": 0.19815083856090795,
+      "sell_through_pct": 0.6766169154228856,
+      "units_on_hand": 195
+    },
+    {
+      "product_name": "Vanilla Cola | 2:1 | Single",
+      "category": "Beverages",
+      "revenue": 16131.06,
+      "units": 3276,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.9440922190201729,
+      "units_on_hand": 194
+    },
+    {
+      "product_name": "Sour Diesel | Single",
+      "category": "Pre-Rolls",
+      "revenue": 36653.16,
+      "units": 4301,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.9576931641059897,
+      "units_on_hand": 190
+    },
+    {
+      "product_name": "Yuzu Citrus | 2:1 | Single",
+      "category": "Beverages",
+      "revenue": 12865.08,
+      "units": 2592,
+      "avg_unit_cost": 2.5231481481481484,
+      "ppi_index": 0.1724013521961922,
+      "sell_through_pct": 0.9360780065005417,
+      "units_on_hand": 177
+    },
+    {
+      "product_name": "Black Cherry Runtz",
+      "category": "Pre-Rolls",
+      "revenue": 16999.16,
+      "units": 1218,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.8737446197991392,
+      "units_on_hand": 176
+    },
+    {
+      "product_name": "Doobies | Blue Dream | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 131234.13,
+      "units": 3767,
+      "avg_unit_cost": 18.758024953543934,
+      "ppi_index": 1.2816959911348846,
+      "sell_through_pct": 0.9553639360892722,
+      "units_on_hand": 176
+    },
+    {
+      "product_name": "Purple Apricot | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 317.1,
+      "units": 23,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.11616161616161616,
+      "units_on_hand": 175
+    },
+    {
+      "product_name": "Biscotti | Single",
+      "category": "Pre-Rolls",
+      "revenue": 10468.5,
+      "units": 753,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.814935064935065,
+      "units_on_hand": 171
+    },
+    {
+      "product_name": "Classics | White Widow | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 183271.38,
+      "units": 3691,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.9559699559699559,
+      "units_on_hand": 170
+    },
+    {
+      "product_name": "Off Hours | Cherry Diesel Cherry Bomb | Live Rosin",
+      "category": "Edibles",
+      "revenue": 8669.7,
+      "units": 230,
+      "avg_unit_cost": 18.24230434782609,
+      "ppi_index": 1.2464578978638052,
+      "sell_through_pct": 0.5764411027568922,
+      "units_on_hand": 169
+    },
+    {
+      "product_name": "Euphoric | Watermelon Lemonade | 10:4 | 10pk",
+      "category": "Edibles",
+      "revenue": 167365.36,
+      "units": 5710,
+      "avg_unit_cost": 13.811810858143609,
+      "ppi_index": 0.9437316908916582,
+      "sell_through_pct": 0.9719148936170213,
+      "units_on_hand": 165
+    },
+    {
+      "product_name": "Tropical Treats | Single",
+      "category": "Pre-Rolls",
+      "revenue": 444.0,
+      "units": 37,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.185,
+      "units_on_hand": 163
+    },
+    {
+      "product_name": "Little Pandas | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 10567.2,
+      "units": 379,
+      "avg_unit_cost": 14.0,
+      "ppi_index": 0.9565902551216242,
+      "sell_through_pct": 0.7005545286506469,
+      "units_on_hand": 162
+    },
+    {
+      "product_name": "The Travel Agency Keychain",
+      "category": "Accessories",
+      "revenue": 85.5,
+      "units": 43,
+      "avg_unit_cost": 2.0,
+      "ppi_index": 0.1366557507316606,
+      "sell_through_pct": 0.21608040201005024,
+      "units_on_hand": 156
+    },
+    {
+      "product_name": "Hybrid Blend | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 8088.5,
+      "units": 233,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1957378189020302,
+      "sell_through_pct": 0.6131578947368421,
+      "units_on_hand": 147
+    },
+    {
+      "product_name": "Zesty Garlic Cookies X Dark Heart Genetics",
+      "category": "Flower",
+      "revenue": 23549.52,
+      "units": 646,
+      "avg_unit_cost": 18.019380804953563,
+      "ppi_index": 1.231226005810302,
+      "sell_through_pct": 0.8146279949558638,
+      "units_on_hand": 147
+    },
+    {
+      "product_name": "Rezziano #20",
+      "category": "Flower",
+      "revenue": 9595.2,
+      "units": 293,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.6766743648960739,
+      "units_on_hand": 140
+    },
+    {
+      "product_name": "Jeeter | Infused | Blueberry Kush",
+      "category": "Pre-Rolls",
+      "revenue": 257.4,
+      "units": 10,
+      "avg_unit_cost": 12.0,
+      "ppi_index": 0.8199345043899636,
+      "sell_through_pct": 0.06666666666666667,
+      "units_on_hand": 140
+    },
+    {
+      "product_name": "Doobies | Purple Hindu Kush | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 13974.72,
+      "units": 1224,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.899338721528288,
+      "units_on_hand": 137
+    },
+    {
+      "product_name": "Planet Of The Grapes | Single",
+      "category": "Pre-Rolls",
+      "revenue": 1151.0,
+      "units": 116,
+      "avg_unit_cost": 5.0,
+      "ppi_index": 0.3416393768291515,
+      "sell_through_pct": 0.46586345381526106,
+      "units_on_hand": 133
+    },
+    {
+      "product_name": "Sasha Colby Kush | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2962.7,
+      "units": 115,
+      "avg_unit_cost": 13.0,
+      "ppi_index": 0.8882623797557939,
+      "sell_through_pct": 0.46558704453441296,
+      "units_on_hand": 132
+    },
+    {
+      "product_name": "Energize | Lemon Zest | 10:5 | 10pk",
+      "category": "Edibles",
+      "revenue": 24089.57,
+      "units": 866,
+      "avg_unit_cost": 13.91025404157044,
+      "ppi_index": 0.9504581044594622,
+      "sell_through_pct": 0.8677354709418837,
+      "units_on_hand": 132
+    },
+    {
+      "product_name": "Lemon Berry Candy Og",
+      "category": "Flower",
+      "revenue": 1948.0,
+      "units": 49,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.2737430167597765,
+      "units_on_hand": 130
+    },
+    {
+      "product_name": "Nighttime Chews | Strawberry | 1:1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 32953.8,
+      "units": 1130,
+      "avg_unit_cost": 14.600884955752212,
+      "ppi_index": 0.9976474474874639,
+      "sell_through_pct": 0.897537728355838,
+      "units_on_hand": 129
+    },
+    {
+      "product_name": "Doobies | Sour Tangie | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 73808.33,
+      "units": 2114,
+      "avg_unit_cost": 19.0,
+      "ppi_index": 1.2982296319507758,
+      "sell_through_pct": 0.9424877396344182,
+      "units_on_hand": 129
+    },
+    {
+      "product_name": "Blueberry Runtz | Single",
+      "category": "Pre-Rolls",
+      "revenue": 14275.51,
+      "units": 1464,
+      "avg_unit_cost": 4.887520491803279,
+      "ppi_index": 0.3339538910118761,
+      "sell_through_pct": 0.9195979899497487,
+      "units_on_hand": 128
+    },
+    {
+      "product_name": "Classic | King Size Slim",
+      "category": "Accessories",
+      "revenue": 2933.4,
+      "units": 984,
+      "avg_unit_cost": 1.2,
+      "ppi_index": 0.08199345043899636,
+      "sell_through_pct": 0.8864864864864865,
+      "units_on_hand": 126
+    },
+    {
+      "product_name": "Doobies | Blueberry Dj Cut | Hash Infused | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 14228.7,
+      "units": 224,
+      "avg_unit_cost": 29.0,
+      "ppi_index": 1.9815083856090787,
+      "sell_through_pct": 0.6418338108882522,
+      "units_on_hand": 125
+    },
+    {
+      "product_name": "Doobies | White Widow | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 66937.11,
+      "units": 1986,
+      "avg_unit_cost": 19.0,
+      "ppi_index": 1.2982296319507758,
+      "sell_through_pct": 0.9407863571766935,
+      "units_on_hand": 125
+    },
+    {
+      "product_name": "Bliss | Watermelon Lemonade | 20pk",
+      "category": "Edibles",
+      "revenue": 98452.27,
+      "units": 3556,
+      "avg_unit_cost": 14.045275590551181,
+      "ppi_index": 0.9596838400299198,
+      "sell_through_pct": 0.966567001902691,
+      "units_on_hand": 123
+    },
+    {
+      "product_name": "Jeeter | Infused | Apples & Bananas",
+      "category": "Pre-Rolls",
+      "revenue": 52.0,
+      "units": 2,
+      "avg_unit_cost": 12.0,
+      "ppi_index": 0.8199345043899636,
+      "sell_through_pct": 0.016,
+      "units_on_hand": 123
+    },
+    {
+      "product_name": "Black Cherry | 1:1 | Single",
+      "category": "Beverages",
+      "revenue": 7319.8,
+      "units": 2177,
+      "avg_unit_cost": 1.75,
+      "ppi_index": 0.11957378189020303,
+      "sell_through_pct": 0.9469334493257938,
+      "units_on_hand": 122
+    },
+    {
+      "product_name": "Moods Black  | Poddy Mouth | All-In-One",
+      "category": "Disposable",
+      "revenue": 7070.5,
+      "units": 178,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.5933333333333334,
+      "units_on_hand": 122
+    },
+    {
+      "product_name": "Black Grape",
+      "category": "Flower",
+      "revenue": 15105.6,
+      "units": 423,
+      "avg_unit_cost": 18.0,
+      "ppi_index": 1.2299017565849455,
+      "sell_through_pct": 0.7804428044280443,
+      "units_on_hand": 119
+    },
+    {
+      "product_name": "Black Maple",
+      "category": "Flower",
+      "revenue": 6953.73,
+      "units": 241,
+      "avg_unit_cost": 26.244813278008298,
+      "ppi_index": 1.7932523306592392,
+      "sell_through_pct": 0.6694444444444444,
+      "units_on_hand": 119
+    },
+    {
+      "product_name": "Garlic Patties",
+      "category": "Flower",
+      "revenue": 11161.0,
+      "units": 103,
+      "avg_unit_cost": 55.80582524271845,
+      "ppi_index": 3.8130934718717726,
+      "sell_through_pct": 0.4681818181818182,
+      "units_on_hand": 117
+    },
+    {
+      "product_name": "Illuminate | Peach Mango | 10:2 | 10pk",
+      "category": "Edibles",
+      "revenue": 69655.79,
+      "units": 2398,
+      "avg_unit_cost": 13.695846538782316,
+      "ppi_index": 0.9358080953314565,
+      "sell_through_pct": 0.9542379625945085,
+      "units_on_hand": 115
+    },
+    {
+      "product_name": "Rainbow Sherbet | Nv City Og | Live Rosin | 10pk",
+      "category": "Edibles",
+      "revenue": 8464.5,
+      "units": 226,
+      "avg_unit_cost": 18.124690265486723,
+      "ppi_index": 1.2384215775044547,
+      "sell_through_pct": 0.6666666666666666,
+      "units_on_hand": 113
+    },
+    {
+      "product_name": "Pineapple Express | 510",
+      "category": "Vape",
+      "revenue": 90121.04,
+      "units": 2015,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.9473436765397273,
+      "units_on_hand": 112
+    },
+    {
+      "product_name": "Sour Diesel",
+      "category": "Flower",
+      "revenue": 31431.31,
+      "units": 755,
+      "avg_unit_cost": 27.076158940397352,
+      "ppi_index": 1.8500564134648823,
+      "sell_through_pct": 0.8708189158016147,
+      "units_on_hand": 112
+    },
+    {
+      "product_name": "Apple Runtz",
+      "category": "Flower",
+      "revenue": 6106.3,
+      "units": 89,
+      "avg_unit_cost": 28.0,
+      "ppi_index": 1.9131805102432484,
+      "sell_through_pct": 0.445,
+      "units_on_hand": 111
+    },
+    {
+      "product_name": "Doobies | Og #18 | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 14763.03,
+      "units": 1588,
+      "avg_unit_cost": 6.5334130982367755,
+      "ppi_index": 0.4464142358898056,
+      "sell_through_pct": 0.9352179034157833,
+      "units_on_hand": 110
+    },
+    {
+      "product_name": "Petals Lotus Cones 2pk",
+      "category": "Accessories",
+      "revenue": 776.99,
+      "units": 98,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.47572815533980584,
+      "units_on_hand": 108
+    },
+    {
+      "product_name": "Daydream | Pink Berry | 10:2 | 10pk",
+      "category": "Edibles",
+      "revenue": 2245.6,
+      "units": 81,
+      "avg_unit_cost": 12.911604938271603,
+      "ppi_index": 0.8822225329950611,
+      "sell_through_pct": 0.43548387096774194,
+      "units_on_hand": 105
+    },
+    {
+      "product_name": "Sasha Colby Kush | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 13613.2,
+      "units": 245,
+      "avg_unit_cost": 30.0,
+      "ppi_index": 2.0498362609749092,
+      "sell_through_pct": 0.7,
+      "units_on_hand": 105
+    },
+    {
+      "product_name": "Memory Loss | Single",
+      "category": "Pre-Rolls",
+      "revenue": 12474.0,
+      "units": 634,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.683278753658303,
+      "sell_through_pct": 0.857916102841678,
+      "units_on_hand": 105
+    },
+    {
+      "product_name": "Rs-11 | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 33033.0,
+      "units": 533,
+      "avg_unit_cost": 32.01219512195122,
+      "ppi_index": 2.187325278479324,
+      "sell_through_pct": 0.8367346938775511,
+      "units_on_hand": 104
+    },
+    {
+      "product_name": "Moods | Lodi Dodi | All-In-One",
+      "category": "Disposable",
+      "revenue": 2547.0,
+      "units": 57,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.35625,
+      "units_on_hand": 103
+    },
+    {
+      "product_name": "Indica Blend | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 3363.5,
+      "units": 97,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1957378189020302,
+      "sell_through_pct": 0.48743718592964824,
+      "units_on_hand": 102
+    },
+    {
+      "product_name": "Green Crack  | Live Resin Infused | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 1896.0,
+      "units": 48,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.32,
+      "units_on_hand": 102
+    },
+    {
+      "product_name": "Mimosa Kush Mints | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 3363.26,
+      "units": 129,
+      "avg_unit_cost": 11.944186046511627,
+      "ppi_index": 0.8161208555323358,
+      "sell_through_pct": 0.5584415584415584,
+      "units_on_hand": 102
+    },
+    {
+      "product_name": "Doobies |  Pink Champagne | Hash Infused | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 22698.0,
+      "units": 353,
+      "avg_unit_cost": 30.88385269121813,
+      "ppi_index": 2.1102280375022153,
+      "sell_through_pct": 0.7758241758241758,
+      "units_on_hand": 102
+    },
+    {
+      "product_name": "Peanut Butter Muffin | Smalls",
+      "category": "Flower",
+      "revenue": 8159.0,
+      "units": 138,
+      "avg_unit_cost": 28.0,
+      "ppi_index": 1.9131805102432484,
+      "sell_through_pct": 0.575,
+      "units_on_hand": 102
+    },
+    {
+      "product_name": "Pineapple Express | All-In-One",
+      "category": "Disposable",
+      "revenue": 13770.5,
+      "units": 432,
+      "avg_unit_cost": 16.105324074074073,
+      "ppi_index": 1.1004425760596397,
+      "sell_through_pct": 0.8105065666041276,
+      "units_on_hand": 101
+    },
+    {
+      "product_name": "Higgs | 22's | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 28188.9,
+      "units": 567,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.8488023952095808,
+      "units_on_hand": 101
+    },
+    {
+      "product_name": "Tropical Lemonade X Zstrawberry Guava | Live Rosin",
+      "category": "Edibles",
+      "revenue": 5916.0,
+      "units": 212,
+      "avg_unit_cost": 14.080188679245284,
+      "ppi_index": 0.9620693772028466,
+      "sell_through_pct": 0.6773162939297125,
+      "units_on_hand": 101
+    },
+    {
+      "product_name": "Boysenberry | 1:1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 28869.89,
+      "units": 1091,
+      "avg_unit_cost": 12.927589367552704,
+      "ppi_index": 0.8833147150867742,
+      "sell_through_pct": 0.915268456375839,
+      "units_on_hand": 101
+    },
+    {
+      "product_name": "Lemon Cherry Gelato | Single",
+      "category": "Pre-Rolls",
+      "revenue": 7723.8,
+      "units": 554,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.8470948012232415,
+      "units_on_hand": 100
+    },
+    {
+      "product_name": "Lemonade | 2:1 | Single",
+      "category": "Beverages",
+      "revenue": 100.0,
+      "units": 20,
+      "avg_unit_cost": 2.0,
+      "ppi_index": 0.1366557507316606,
+      "sell_through_pct": 0.16666666666666666,
+      "units_on_hand": 100
+    },
+    {
+      "product_name": "Laugh | Blackberry Lemonade | 10pk",
+      "category": "Edibles",
+      "revenue": 40624.3,
+      "units": 1462,
+      "avg_unit_cost": 13.934938440492477,
+      "ppi_index": 0.9521447369924877,
+      "sell_through_pct": 0.9365791159513133,
+      "units_on_hand": 99
+    },
+    {
+      "product_name": "Exhilarate | Wild Cherry 1:1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 10788.0,
+      "units": 361,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.7847826086956522,
+      "units_on_hand": 99
+    },
+    {
+      "product_name": "Gelato Sherbet",
+      "category": "Flower",
+      "revenue": 5520.6,
+      "units": 154,
+      "avg_unit_cost": 18.0,
+      "ppi_index": 1.2299017565849455,
+      "sell_through_pct": 0.6086956521739131,
+      "units_on_hand": 99
+    },
+    {
+      "product_name": "Rose | 1:1 | Single",
+      "category": "Beverages",
+      "revenue": 3314.0,
+      "units": 670,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.8723958333333334,
+      "units_on_hand": 98
+    },
+    {
+      "product_name": "Sours | Uplifting | Watermelon Spritz | 10pk",
+      "category": "Edibles",
+      "revenue": 66346.66,
+      "units": 2386,
+      "avg_unit_cost": 14.076278290025147,
+      "ppi_index": 0.9618021886155812,
+      "sell_through_pct": 0.9605475040257649,
+      "units_on_hand": 98
+    },
+    {
+      "product_name": "Gorilla Glue #4 | All-In-One",
+      "category": "Disposable",
+      "revenue": 30455.5,
+      "units": 342,
+      "avg_unit_cost": 37.099415204678365,
+      "ppi_index": 2.534924218250453,
+      "sell_through_pct": 0.7808219178082192,
+      "units_on_hand": 96
+    },
+    {
+      "product_name": "Foreign Kush Mintz X Dark Heart Genetics",
+      "category": "Flower",
+      "revenue": 4787.84,
+      "units": 126,
+      "avg_unit_cost": 18.572142857142858,
+      "ppi_index": 1.2689950624192528,
+      "sell_through_pct": 0.5675675675675675,
+      "units_on_hand": 96
+    },
+    {
+      "product_name": "Gmo | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 453.7,
+      "units": 35,
+      "avg_unit_cost": 6.5,
+      "ppi_index": 0.44413118987789696,
+      "sell_through_pct": 0.2692307692307692,
+      "units_on_hand": 95
+    },
+    {
+      "product_name": "Doobies | Grand Daddy Purple | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 65732.65,
+      "units": 1982,
+      "avg_unit_cost": 19.0,
+      "ppi_index": 1.2982296319507758,
+      "sell_through_pct": 0.954260953298026,
+      "units_on_hand": 95
+    },
+    {
+      "product_name": "Tropical Cooler X Cherry Lime Reserve | Chairlifts | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 5114.4,
+      "units": 427,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.8195777351247601,
+      "units_on_hand": 94
+    },
+    {
+      "product_name": "Sparkling Strawberry Lemonade | 1:1 | Single",
+      "category": "Beverages",
+      "revenue": 133.75,
+      "units": 27,
+      "avg_unit_cost": 2.0,
+      "ppi_index": 0.1366557507316606,
+      "sell_through_pct": 0.225,
+      "units_on_hand": 93
+    },
+    {
+      "product_name": "Blueberry Kush | 510",
+      "category": "Vape",
+      "revenue": 76603.14,
+      "units": 1723,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.9493112947658402,
+      "units_on_hand": 92
+    },
+    {
+      "product_name": "Offline | Grape Punch | 10:10:4 | 10pk",
+      "category": "Edibles",
+      "revenue": 56107.73,
+      "units": 1929,
+      "avg_unit_cost": 13.84168481078279,
+      "ppi_index": 0.9457729146042728,
+      "sell_through_pct": 0.9549504950495049,
+      "units_on_hand": 91
+    },
+    {
+      "product_name": "Slingria | 28g",
+      "category": "Flower",
+      "revenue": 41676.77,
+      "units": 299,
+      "avg_unit_cost": 74.53377926421405,
+      "ppi_index": 5.092734780109525,
+      "sell_through_pct": 0.7666666666666667,
+      "units_on_hand": 91
+    },
+    {
+      "product_name": "Blue Widow  | All-In-One",
+      "category": "Disposable",
+      "revenue": 6555.01,
+      "units": 220,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.7096774193548387,
+      "units_on_hand": 90
+    },
+    {
+      "product_name": "Yuzu Peach Deez  | Single",
+      "category": "Beverages",
+      "revenue": 1718.0,
+      "units": 432,
+      "avg_unit_cost": 2.0574074074074074,
+      "ppi_index": 0.14057827691006938,
+      "sell_through_pct": 0.8275862068965517,
+      "units_on_hand": 90
+    },
+    {
+      "product_name": "Sours | Chill | Strawberry Sunset | 10pk",
+      "category": "Edibles",
+      "revenue": 24742.67,
+      "units": 888,
+      "avg_unit_cost": 14.067567567567568,
+      "ppi_index": 0.9612070034571534,
+      "sell_through_pct": 0.9089048106448311,
+      "units_on_hand": 89
+    },
+    {
+      "product_name": "1 1/4 Half-Gram New York Pre-Rolled Cones - Refined White [21 Cones Per Pack]",
+      "category": "Accessories",
+      "revenue": 93.2,
+      "units": 12,
+      "avg_unit_cost": 3.15,
+      "ppi_index": 0.21523280740236544,
+      "sell_through_pct": 0.12,
+      "units_on_hand": 88
+    },
+    {
+      "product_name": "Mellow | Blue Razzberry | 10:2 | 10pk",
+      "category": "Edibles",
+      "revenue": 69012.96,
+      "units": 2363,
+      "avg_unit_cost": 13.822475666525603,
+      "ppi_index": 0.9444603945895836,
+      "sell_through_pct": 0.9644897959183674,
+      "units_on_hand": 87
+    },
+    {
+      "product_name": "Red Headed Stranger | 510",
+      "category": "Vape",
+      "revenue": 14336.77,
+      "units": 467,
+      "avg_unit_cost": 22.80884368308351,
+      "ppi_index": 1.5584798284164358,
+      "sell_through_pct": 0.8429602888086642,
+      "units_on_hand": 87
+    },
+    {
+      "product_name": "Limelight | Cherry Limeade | 10:2 | 10pk",
+      "category": "Edibles",
+      "revenue": 68503.04,
+      "units": 2311,
+      "avg_unit_cost": 13.9929035049762,
+      "ppi_index": 0.9561053666941038,
+      "sell_through_pct": 0.96371976647206,
+      "units_on_hand": 87
+    },
+    {
+      "product_name": "Gelonade | Live Resin",
+      "category": "Edibles",
+      "revenue": 7665.9,
+      "units": 353,
+      "avg_unit_cost": 10.450906515580735,
+      "ppi_index": 0.7140882378565443,
+      "sell_through_pct": 0.8022727272727272,
+      "units_on_hand": 87
+    },
+    {
+      "product_name": "Blue Dream | Single",
+      "category": "Pre-Rolls",
+      "revenue": 31529.36,
+      "units": 2259,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.9633262260127932,
+      "units_on_hand": 86
+    },
+    {
+      "product_name": "Pineapple Runtz | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2104.8,
+      "units": 265,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.7571428571428571,
+      "units_on_hand": 85
+    },
+    {
+      "product_name": "Classics | Grand Daddy Purple | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 68255.0,
+      "units": 1372,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.9416609471516816,
+      "units_on_hand": 85
+    },
+    {
+      "product_name": "Dutch Hawaiian | Infused | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 49292.84,
+      "units": 1242,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.9366515837104072,
+      "units_on_hand": 84
+    },
+    {
+      "product_name": "Cereal Milk",
+      "category": "Flower",
+      "revenue": 5639.45,
+      "units": 258,
+      "avg_unit_cost": 18.510581395348837,
+      "ppi_index": 1.2647886985304524,
+      "sell_through_pct": 0.7543859649122807,
+      "units_on_hand": 84
+    },
+    {
+      "product_name": "Lemongrass | Single",
+      "category": "Pre-Rolls",
+      "revenue": 682.0,
+      "units": 69,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.45394736842105265,
+      "units_on_hand": 83
+    },
+    {
+      "product_name": "Atomic Breath",
+      "category": "Flower",
+      "revenue": 18028.0,
+      "units": 456,
+      "avg_unit_cost": 16.526315789473685,
+      "ppi_index": 1.1292080455195115,
+      "sell_through_pct": 0.8460111317254174,
+      "units_on_hand": 83
+    },
+    {
+      "product_name": "Sleep | Midnight Blueberry | 5:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 78732.8,
+      "units": 2693,
+      "avg_unit_cost": 14.997400668399555,
+      "ppi_index": 1.024740523681825,
+      "sell_through_pct": 0.9704504504504504,
+      "units_on_hand": 82
+    },
+    {
+      "product_name": "Up | Pillow Talk | Blueberry Lavender | 2:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 31417.57,
+      "units": 1368,
+      "avg_unit_cost": 12.5,
+      "ppi_index": 0.8540984420728788,
+      "sell_through_pct": 0.9434482758620689,
+      "units_on_hand": 82
+    },
+    {
+      "product_name": "Shot Caller | Single",
+      "category": "Pre-Rolls",
+      "revenue": 5497.0,
+      "units": 670,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.8921438082556591,
+      "units_on_hand": 81
+    },
+    {
+      "product_name": "Moods | Rainbow Belt | All-In-One",
+      "category": "Disposable",
+      "revenue": 7645.5,
+      "units": 159,
+      "avg_unit_cost": 26.27358490566038,
+      "ppi_index": 1.7952182348475227,
+      "sell_through_pct": 0.6625,
+      "units_on_hand": 81
+    },
+    {
+      "product_name": "Slumber | Midnight Cherry | 10:10:5 | 10pk",
+      "category": "Edibles",
+      "revenue": 27870.12,
+      "units": 1002,
+      "avg_unit_cost": 13.953692614770459,
+      "ppi_index": 0.9534261698751426,
+      "sell_through_pct": 0.9260628465804066,
+      "units_on_hand": 80
+    },
+    {
+      "product_name": "Sour Unicorn | Hash Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 5923.5,
+      "units": 598,
+      "avg_unit_cost": 4.909999999999999,
+      "ppi_index": 0.33548986804622677,
+      "sell_through_pct": 0.8820058997050148,
+      "units_on_hand": 80
+    },
+    {
+      "product_name": "Sours | Deep Sleep | Blackberry Dream | 1:1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 63406.0,
+      "units": 2126,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9637352674524026,
+      "units_on_hand": 80
+    },
+    {
+      "product_name": "Candyland | Live Resin | 510",
+      "category": "Vape",
+      "revenue": 21601.8,
+      "units": 290,
+      "avg_unit_cost": 38.737586206896516,
+      "ppi_index": 2.646856962317932,
+      "sell_through_pct": 0.7837837837837838,
+      "units_on_hand": 80
+    },
+    {
+      "product_name": "Sour Tangie  | All-In-One",
+      "category": "Disposable",
+      "revenue": 12721.0,
+      "units": 193,
+      "avg_unit_cost": 32.0,
+      "ppi_index": 2.18649201170657,
+      "sell_through_pct": 0.7121771217712177,
+      "units_on_hand": 78
+    },
+    {
+      "product_name": "Fruit Punch | Single",
+      "category": "Beverages",
+      "revenue": 443.75,
+      "units": 91,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.5384615384615384,
+      "units_on_hand": 78
+    },
+    {
+      "product_name": "Dogwalkers | Creamsicle Sunset | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 2140.5,
+      "units": 72,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.48,
+      "units_on_hand": 78
+    },
+    {
+      "product_name": "Sour Diesel | 510",
+      "category": "Vape",
+      "revenue": 71713.95,
+      "units": 1617,
+      "avg_unit_cost": 22.50309214594929,
+      "ppi_index": 1.5375884754942177,
+      "sell_through_pct": 0.9556737588652482,
+      "units_on_hand": 75
+    },
+    {
+      "product_name": "Town Heights | Single",
+      "category": "Pre-Rolls",
+      "revenue": 312.0,
+      "units": 26,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.26,
+      "units_on_hand": 74
+    },
+    {
+      "product_name": "Black Runtz",
+      "category": "Flower",
+      "revenue": 2382.6,
+      "units": 55,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.4263565891472868,
+      "units_on_hand": 74
+    },
+    {
+      "product_name": "Jeeter | Infused | Bubba G",
+      "category": "Pre-Rolls",
+      "revenue": 10.0,
+      "units": 2,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.02666666666666667,
+      "units_on_hand": 73
+    },
+    {
+      "product_name": "Blueberry Banana Swirl | Infused | Pre Ground",
+      "category": "Flower",
+      "revenue": 28944.0,
+      "units": 246,
+      "avg_unit_cost": 60.0,
+      "ppi_index": 4.0996725219498185,
+      "sell_through_pct": 0.7711598746081505,
+      "units_on_hand": 73
+    },
+    {
+      "product_name": "Nightly Nightcap | Dark Cherry | 1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 40456.11,
+      "units": 1245,
+      "avg_unit_cost": 15.93574297188755,
+      "ppi_index": 1.0888554596450386,
+      "sell_through_pct": 0.9446130500758725,
+      "units_on_hand": 73
+    },
+    {
+      "product_name": "Fernway Pineapple Express | All-In-One",
+      "category": "Disposable",
+      "revenue": 6972.5,
+      "units": 144,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.663594470046083,
+      "units_on_hand": 73
+    },
+    {
+      "product_name": "Subway Sesh | 6 Pack",
+      "category": "Pre-Rolls",
+      "revenue": 3658.2,
+      "units": 88,
+      "avg_unit_cost": 20.710000000000004,
+      "ppi_index": 1.415070298826346,
+      "sell_through_pct": 0.55,
+      "units_on_hand": 72
+    },
+    {
+      "product_name": "Elderflower | 510",
+      "category": "Vape",
+      "revenue": 6755.44,
+      "units": 180,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.7142857142857143,
+      "units_on_hand": 72
+    },
+    {
+      "product_name": "Baby Jeeter | Infused | Pink Lemon | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 180.0,
+      "units": 3,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.04,
+      "units_on_hand": 72
+    },
+    {
+      "product_name": "Grapefruit | 1:1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 29063.21,
+      "units": 1105,
+      "avg_unit_cost": 12.982805429864253,
+      "ppi_index": 0.8870875113105896,
+      "sell_through_pct": 0.939625850340136,
+      "units_on_hand": 71
+    },
+    {
+      "product_name": "Stay | Permanent Marker | .75g",
+      "category": "Pre-Rolls",
+      "revenue": 464.0,
+      "units": 29,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.29,
+      "units_on_hand": 71
+    },
+    {
+      "product_name": "Cereal Milk | All-In-One",
+      "category": "Disposable",
+      "revenue": 37787.5,
+      "units": 1204,
+      "avg_unit_cost": 15.485880398671096,
+      "ppi_index": 1.058117305810553,
+      "sell_through_pct": 0.9443137254901961,
+      "units_on_hand": 71
+    },
+    {
+      "product_name": "Doobies | 707 Headband | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 47804.82,
+      "units": 1467,
+      "avg_unit_cost": 19.0,
+      "ppi_index": 1.2982296319507758,
+      "sell_through_pct": 0.9544567338972023,
+      "units_on_hand": 70
+    },
+    {
+      "product_name": "Zesty | .5g | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2380.0,
+      "units": 170,
+      "avg_unit_cost": 7.235294117647059,
+      "ppi_index": 0.4943722747057134,
+      "sell_through_pct": 0.7083333333333334,
+      "units_on_hand": 70
+    },
+    {
+      "product_name": "Jelly Donutz | Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 12305.0,
+      "units": 831,
+      "avg_unit_cost": 8.211191335740072,
+      "ppi_index": 0.5610532581934333,
+      "sell_through_pct": 0.9233333333333333,
+      "units_on_hand": 69
+    },
+    {
+      "product_name": "Baby Jeeter | Infused | Berry White | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 354.0,
+      "units": 6,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.08,
+      "units_on_hand": 69
+    },
+    {
+      "product_name": "Jeeter | Infused | Strawberry Sour Diesel",
+      "category": "Pre-Rolls",
+      "revenue": 156.0,
+      "units": 6,
+      "avg_unit_cost": 12.0,
+      "ppi_index": 0.8199345043899636,
+      "sell_through_pct": 0.08,
+      "units_on_hand": 69
+    },
+    {
+      "product_name": "Og Kush | All-In-One",
+      "category": "Disposable",
+      "revenue": 15445.0,
+      "units": 190,
+      "avg_unit_cost": 35.757894736842104,
+      "ppi_index": 2.443260974923427,
+      "sell_through_pct": 0.7335907335907336,
+      "units_on_hand": 69
+    },
+    {
+      "product_name": "Wild Blueberry Kush | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2599.0,
+      "units": 132,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.683278753658303,
+      "sell_through_pct": 0.66,
+      "units_on_hand": 68
+    },
+    {
+      "product_name": "Jeeter | Infused | Acapulco Gold",
+      "category": "Pre-Rolls",
+      "revenue": 39.0,
+      "units": 8,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.10666666666666667,
+      "units_on_hand": 67
+    },
+    {
+      "product_name": "Good Tide Gummies: Mango | Live Rosin",
+      "category": "Edibles",
+      "revenue": 2573.2,
+      "units": 93,
+      "avg_unit_cost": 12.0,
+      "ppi_index": 0.8199345043899636,
+      "sell_through_pct": 0.58125,
+      "units_on_hand": 67
+    },
+    {
+      "product_name": "Sour Cherry | 10pk",
+      "category": "Edibles",
+      "revenue": 19357.23,
+      "units": 877,
+      "avg_unit_cost": 11.174458380843786,
+      "ppi_index": 0.7635269995269521,
+      "sell_through_pct": 0.9290254237288136,
+      "units_on_hand": 67
+    },
+    {
+      "product_name": "Sour Peach Hibiscus  | 1:1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 15704.65,
+      "units": 1189,
+      "avg_unit_cost": 10.609167367535743,
+      "ppi_index": 0.7249018656242162,
+      "sell_through_pct": 0.946656050955414,
+      "units_on_hand": 67
+    },
+    {
+      "product_name": "Ruby Rose Peta | Black Haze | Hash Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 924.0,
+      "units": 31,
+      "avg_unit_cost": 14.0,
+      "ppi_index": 0.9565902551216242,
+      "sell_through_pct": 0.3163265306122449,
+      "units_on_hand": 67
+    },
+    {
+      "product_name": "Daily Elevation | Peach | 1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 33200.86,
+      "units": 1026,
+      "avg_unit_cost": 15.961013645224172,
+      "ppi_index": 1.0905821510631941,
+      "sell_through_pct": 0.9395604395604396,
+      "units_on_hand": 66
+    },
+    {
+      "product_name": "Mfny Skunk | Live Resin | All-In-One",
+      "category": "Disposable",
+      "revenue": 1591.2,
+      "units": 34,
+      "avg_unit_cost": 24.0,
+      "ppi_index": 1.6398690087799273,
+      "sell_through_pct": 0.34,
+      "units_on_hand": 66
+    },
+    {
+      "product_name": "Shock Mints",
+      "category": "Flower",
+      "revenue": 50508.1,
+      "units": 384,
+      "avg_unit_cost": 74.40000000000002,
+      "ppi_index": 5.083593927217776,
+      "sell_through_pct": 0.8533333333333334,
+      "units_on_hand": 66
+    },
+    {
+      "product_name": "Lemongrass",
+      "category": "Flower",
+      "revenue": 4401.0,
+      "units": 147,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.6933962264150944,
+      "units_on_hand": 65
+    },
+    {
+      "product_name": "Ruby Rose Petal | White Widow | Hash Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 1014.0,
+      "units": 34,
+      "avg_unit_cost": 14.0,
+      "ppi_index": 0.9565902551216242,
+      "sell_through_pct": 0.3434343434343434,
+      "units_on_hand": 65
+    },
+    {
+      "product_name": "White Fire  | Live Resin | 510",
+      "category": "Vape",
+      "revenue": 3793.5,
+      "units": 85,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.5666666666666667,
+      "units_on_hand": 65
+    },
+    {
+      "product_name": "Peach Maraschino",
+      "category": "Flower",
+      "revenue": 1702.5,
+      "units": 35,
+      "avg_unit_cost": 23.0,
+      "ppi_index": 1.571541133414097,
+      "sell_through_pct": 0.35,
+      "units_on_hand": 65
+    },
+    {
+      "product_name": "Berry Pie | Live Resin",
+      "category": "Edibles",
+      "revenue": 5535.2,
+      "units": 255,
+      "avg_unit_cost": 10.232745098039215,
+      "ppi_index": 0.6991817317091346,
+      "sell_through_pct": 0.796875,
+      "units_on_hand": 65
+    },
+    {
+      "product_name": "Black Ice",
+      "category": "Flower",
+      "revenue": 2756.6,
+      "units": 64,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.5,
+      "units_on_hand": 64
+    },
+    {
+      "product_name": "Banjerine | Live Resin",
+      "category": "Edibles",
+      "revenue": 5135.9,
+      "units": 236,
+      "avg_unit_cost": 10.386906779661018,
+      "ppi_index": 0.7097152718771759,
+      "sell_through_pct": 0.7866666666666666,
+      "units_on_hand": 64
+    },
+    {
+      "product_name": "Black Cherry Lemonade | Single",
+      "category": "Beverages",
+      "revenue": 2504.5,
+      "units": 512,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.8888888888888888,
+      "units_on_hand": 64
+    },
+    {
+      "product_name": "Double Durban | Chairlifts  | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 2346.0,
+      "units": 196,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.7567567567567568,
+      "units_on_hand": 63
+    },
+    {
+      "product_name": "Doobies | African Orange | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 53296.65,
+      "units": 1537,
+      "avg_unit_cost": 19.0,
+      "ppi_index": 1.2982296319507758,
+      "sell_through_pct": 0.960625,
+      "units_on_hand": 63
+    },
+    {
+      "product_name": "Sour Candy Kush | Infused | Pre Ground",
+      "category": "Flower",
+      "revenue": 13800.0,
+      "units": 117,
+      "avg_unit_cost": 60.0,
+      "ppi_index": 4.0996725219498185,
+      "sell_through_pct": 0.65,
+      "units_on_hand": 63
+    },
+    {
+      "product_name": "Lemon Grab | Single",
+      "category": "Pre-Rolls",
+      "revenue": 23341.2,
+      "units": 3181,
+      "avg_unit_cost": 4.20276642565231,
+      "ppi_index": 0.28716610052366714,
+      "sell_through_pct": 0.9808818994757941,
+      "units_on_hand": 62
+    },
+    {
+      "product_name": "Jeeter | Infused | Blueberry Kush",
+      "category": "Pre-Rolls",
+      "revenue": 65.0,
+      "units": 13,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.17333333333333334,
+      "units_on_hand": 62
+    },
+    {
+      "product_name": "Durban Poison X Triangle Kush  | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 10503.5,
+      "units": 172,
+      "avg_unit_cost": 31.40988372093023,
+      "ppi_index": 2.146170620138943,
+      "sell_through_pct": 0.7350427350427351,
+      "units_on_hand": 62
+    },
+    {
+      "product_name": "Jeeter | Infused | Gelato",
+      "category": "Pre-Rolls",
+      "revenue": 60.0,
+      "units": 12,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.16216216216216217,
+      "units_on_hand": 62
+    },
+    {
+      "product_name": "Jeeter | Infused | Gelato",
+      "category": "Pre-Rolls",
+      "revenue": 338.0,
+      "units": 13,
+      "avg_unit_cost": 12.0,
+      "ppi_index": 0.8199345043899636,
+      "sell_through_pct": 0.17333333333333334,
+      "units_on_hand": 62
+    },
+    {
+      "product_name": "On | All-In-One",
+      "category": "Disposable",
+      "revenue": 7079.4,
+      "units": 188,
+      "avg_unit_cost": 18.173244680851063,
+      "ppi_index": 1.24173919754593,
+      "sell_through_pct": 0.752,
+      "units_on_hand": 62
+    },
+    {
+      "product_name": "Acapulco Gold | Single",
+      "category": "Pre-Rolls",
+      "revenue": 753.0,
+      "units": 38,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.683278753658303,
+      "sell_through_pct": 0.38,
+      "units_on_hand": 62
+    },
+    {
+      "product_name": "Pineapple Habanero | 20pk",
+      "category": "Edibles",
+      "revenue": 20696.7,
+      "units": 781,
+      "avg_unit_cost": 13.39741357234315,
+      "ppi_index": 0.915416804795546,
+      "sell_through_pct": 0.9275534441805225,
+      "units_on_hand": 61
+    },
+    {
+      "product_name": "Unwind | All-In-One",
+      "category": "Disposable",
+      "revenue": 6395.4,
+      "units": 169,
+      "avg_unit_cost": 18.45189349112426,
+      "ppi_index": 1.2607786787251138,
+      "sell_through_pct": 0.7347826086956522,
+      "units_on_hand": 61
+    },
+    {
+      "product_name": "T-Shirt | Gray | Medium",
+      "category": "Accessories",
+      "revenue": 76.0,
+      "units": 2,
+      "avg_unit_cost": 15.45,
+      "ppi_index": 1.0556656744020783,
+      "sell_through_pct": 0.031746031746031744,
+      "units_on_hand": 61
+    },
+    {
+      "product_name": "Durban Poison | Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2203.75,
+      "units": 89,
+      "avg_unit_cost": 11.095505617977528,
+      "ppi_index": 0.7581323249860384,
+      "sell_through_pct": 0.5933333333333334,
+      "units_on_hand": 61
+    },
+    {
+      "product_name": "Pearls | Blackberry Lemonade | Rosin | 1:1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 27105.6,
+      "units": 1246,
+      "avg_unit_cost": 11.0,
+      "ppi_index": 0.7516066290241333,
+      "sell_through_pct": 0.9540581929555896,
+      "units_on_hand": 60
+    },
+    {
+      "product_name": "Sour Diesel",
+      "category": "Flower",
+      "revenue": 33641.31,
+      "units": 390,
+      "avg_unit_cost": 41.53846153846154,
+      "ppi_index": 2.8382348228883356,
+      "sell_through_pct": 0.8666666666666667,
+      "units_on_hand": 60
+    },
+    {
+      "product_name": "Durban Z",
+      "category": "Flower",
+      "revenue": 7681.56,
+      "units": 193,
+      "avg_unit_cost": 19.819222797927466,
+      "ppi_index": 1.3542053851844105,
+      "sell_through_pct": 0.7628458498023716,
+      "units_on_hand": 60
+    },
+    {
+      "product_name": "Toast | Velvet Grasshopper | 1g",
+      "category": "Pre-Rolls",
+      "revenue": 3104.4,
+      "units": 260,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.8125,
+      "units_on_hand": 60
+    },
+    {
+      "product_name": "Strawberry Cough |",
+      "category": "Pre-Rolls",
+      "revenue": 8435.0,
+      "units": 170,
+      "avg_unit_cost": 25.66176470588235,
+      "ppi_index": 1.7534138604907923,
+      "sell_through_pct": 0.7391304347826086,
+      "units_on_hand": 60
+    },
+    {
+      "product_name": "Pear | 1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 30668.3,
+      "units": 1204,
+      "avg_unit_cost": 12.287890365448506,
+      "ppi_index": 0.8396054413993526,
+      "sell_through_pct": 0.9525316455696202,
+      "units_on_hand": 60
+    },
+    {
+      "product_name": "Piff Haze | Infused | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 1273.52,
+      "units": 46,
+      "avg_unit_cost": 14.348260869565218,
+      "ppi_index": 0.9803861804120722,
+      "sell_through_pct": 0.4380952380952381,
+      "units_on_hand": 59
+    },
+    {
+      "product_name": "Doobies | Black Haze | Hash Infused | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 104708.5,
+      "units": 1633,
+      "avg_unit_cost": 32.37140232700551,
+      "ppi_index": 2.2118691436167817,
+      "sell_through_pct": 0.9651300236406619,
+      "units_on_hand": 59
+    },
+    {
+      "product_name": "1 Gram King Size Pre Rolled Tubes With Natural Wood Filter Tips [5 Tubes Per Pack]",
+      "category": "Accessories",
+      "revenue": 10.0,
+      "units": 2,
+      "avg_unit_cost": 2.47,
+      "ppi_index": 0.16876985215360085,
+      "sell_through_pct": 0.03333333333333333,
+      "units_on_hand": 58
+    },
+    {
+      "product_name": "Candyland  | All-In-One",
+      "category": "Disposable",
+      "revenue": 4880.0,
+      "units": 62,
+      "avg_unit_cost": 39.74193548387097,
+      "ppi_index": 2.7154820145388046,
+      "sell_through_pct": 0.5166666666666667,
+      "units_on_hand": 58
+    },
+    {
+      "product_name": "Classics | Kosher Kush | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 61855.0,
+      "units": 1246,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.9555214723926381,
+      "units_on_hand": 58
+    },
+    {
+      "product_name": "Green Crack | 510",
+      "category": "Vape",
+      "revenue": 70853.2,
+      "units": 1591,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.9648271679805943,
+      "units_on_hand": 58
+    },
+    {
+      "product_name": "Raspberry X Wedding Cake | Live Resin | Hybrid",
+      "category": "Edibles",
+      "revenue": 31350.02,
+      "units": 1055,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9478885893980233,
+      "units_on_hand": 58
+    },
+    {
+      "product_name": "Jeeter | Infused | Strawberry Sour Diesel",
+      "category": "Pre-Rolls",
+      "revenue": 89.34,
+      "units": 18,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.24,
+      "units_on_hand": 57
+    },
+    {
+      "product_name": "Jack Herer | 510",
+      "category": "Vape",
+      "revenue": 49119.84,
+      "units": 1100,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.9507346585998271,
+      "units_on_hand": 57
+    },
+    {
+      "product_name": "Sativa Blend | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 7080.5,
+      "units": 204,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1957378189020302,
+      "sell_through_pct": 0.7816091954022989,
+      "units_on_hand": 57
+    },
+    {
+      "product_name": "Sour Diesel | Single",
+      "category": "Pre-Rolls",
+      "revenue": 29003.94,
+      "units": 2440,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.9771726071285542,
+      "units_on_hand": 57
+    },
+    {
+      "product_name": "Indica Variety Pack | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 92.0,
+      "units": 2,
+      "avg_unit_cost": 23.0,
+      "ppi_index": 1.571541133414097,
+      "sell_through_pct": 0.03389830508474576,
+      "units_on_hand": 57
+    },
+    {
+      "product_name": "Classic | Super Lemon Haze | All-In-One",
+      "category": "Disposable",
+      "revenue": 17489.0,
+      "units": 303,
+      "avg_unit_cost": 29.2986798679868,
+      "ppi_index": 2.0019165464031636,
+      "sell_through_pct": 0.8416666666666667,
+      "units_on_hand": 57
+    },
+    {
+      "product_name": "Root Beer  | 2:1 | Single",
+      "category": "Beverages",
+      "revenue": 1189.51,
+      "units": 246,
+      "avg_unit_cost": 2.4491869918699187,
+      "ppi_index": 0.16734774352810064,
+      "sell_through_pct": 0.8118811881188119,
+      "units_on_hand": 57
+    },
+    {
+      "product_name": "Skywalker Og",
+      "category": "Pre-Rolls",
+      "revenue": 6311.61,
+      "units": 127,
+      "avg_unit_cost": 25.655511811023622,
+      "ppi_index": 1.7529866134702095,
+      "sell_through_pct": 0.6939890710382514,
+      "units_on_hand": 56
+    },
+    {
+      "product_name": "Strawberry Sour Diesel | Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2306.25,
+      "units": 93,
+      "avg_unit_cost": 12.5,
+      "ppi_index": 0.8540984420728788,
+      "sell_through_pct": 0.6241610738255033,
+      "units_on_hand": 56
+    },
+    {
+      "product_name": "Lobotomy | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 6371.2,
+      "units": 146,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.7227722772277227,
+      "units_on_hand": 56
+    },
+    {
+      "product_name": "Lilac Diesel | Infused",
+      "category": "Pre-Rolls",
+      "revenue": 5386.52,
+      "units": 271,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.683278753658303,
+      "sell_through_pct": 0.8312883435582822,
+      "units_on_hand": 55
+    },
+    {
+      "product_name": "Strawberry | 20:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 22985.7,
+      "units": 934,
+      "avg_unit_cost": 11.11627408993576,
+      "ppi_index": 0.7595513905495394,
+      "sell_through_pct": 0.9443882709807887,
+      "units_on_hand": 55
+    },
+    {
+      "product_name": "Jet Fuel Gelato",
+      "category": "Flower",
+      "revenue": 2120.0,
+      "units": 41,
+      "avg_unit_cost": 26.5,
+      "ppi_index": 1.810688697194503,
+      "sell_through_pct": 0.4270833333333333,
+      "units_on_hand": 55
+    },
+    {
+      "product_name": "Recover | Freshly Squeeze | 1:2 | 20pk",
+      "category": "Edibles",
+      "revenue": 39041.13,
+      "units": 1308,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9596478356566398,
+      "units_on_hand": 55
+    },
+    {
+      "product_name": "Biscotti | 7g",
+      "category": "Flower",
+      "revenue": 12908.0,
+      "units": 186,
+      "avg_unit_cost": 35.0,
+      "ppi_index": 2.3914756378040605,
+      "sell_through_pct": 0.7717842323651453,
+      "units_on_hand": 55
+    },
+    {
+      "product_name": "French Orange Papers | 32pk",
+      "category": "Accessories",
+      "revenue": 1825.5,
+      "units": 616,
+      "avg_unit_cost": 1.6684090909090903,
+      "ppi_index": 0.11399884842285456,
+      "sell_through_pct": 0.9194029850746268,
+      "units_on_hand": 54
+    },
+    {
+      "product_name": "Nuclear Muffins",
+      "category": "Flower",
+      "revenue": 240.0,
+      "units": 6,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.1,
+      "units_on_hand": 54
+    },
+    {
+      "product_name": "Gorilla Punch | Diamond Infused | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 5734.5,
+      "units": 170,
+      "avg_unit_cost": 15.988235294117647,
+      "ppi_index": 1.0924421484960398,
+      "sell_through_pct": 0.7589285714285714,
+      "units_on_hand": 54
+    },
+    {
+      "product_name": "Jeeter | Infused | Maui Wowie",
+      "category": "Pre-Rolls",
+      "revenue": 109.24,
+      "units": 46,
+      "avg_unit_cost": 2.8747826086956523,
+      "ppi_index": 0.19642778779081305,
+      "sell_through_pct": 0.46464646464646464,
+      "units_on_hand": 53
+    },
+    {
+      "product_name": "T-Shirt | Black | Large",
+      "category": "Accessories",
+      "revenue": 0.0,
+      "units": 1,
+      "avg_unit_cost": 18.1,
+      "ppi_index": 1.2367345441215285,
+      "sell_through_pct": 0.018518518518518517,
+      "units_on_hand": 53
+    },
+    {
+      "product_name": "Miami Heat",
+      "category": "Flower",
+      "revenue": 11175.0,
+      "units": 47,
+      "avg_unit_cost": 125.0,
+      "ppi_index": 8.540984420728789,
+      "sell_through_pct": 0.47,
+      "units_on_hand": 53
+    },
+    {
+      "product_name": "Pineapple Express |",
+      "category": "Pre-Rolls",
+      "revenue": 9718.54,
+      "units": 196,
+      "avg_unit_cost": 25.883928571428573,
+      "ppi_index": 1.7685938454066255,
+      "sell_through_pct": 0.7871485943775101,
+      "units_on_hand": 53
+    },
+    {
+      "product_name": "Lift | Ak-47 | Single",
+      "category": "Pre-Rolls",
+      "revenue": 6444.91,
+      "units": 863,
+      "avg_unit_cost": 7.5,
+      "ppi_index": 0.5124590652437273,
+      "sell_through_pct": 0.9421397379912664,
+      "units_on_hand": 53
+    },
+    {
+      "product_name": "Good Tide Gummies: Pineapple | Live Rosin",
+      "category": "Edibles",
+      "revenue": 3507.0,
+      "units": 127,
+      "avg_unit_cost": 12.0,
+      "ppi_index": 0.8199345043899636,
+      "sell_through_pct": 0.7055555555555556,
+      "units_on_hand": 53
+    },
+    {
+      "product_name": "Sours | Energy | Tropical Burst | 2:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 26148.72,
+      "units": 888,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9446808510638298,
+      "units_on_hand": 52
+    },
+    {
+      "product_name": "Watermelon X Fatso | Live Rosin",
+      "category": "Edibles",
+      "revenue": 3837.0,
+      "units": 148,
+      "avg_unit_cost": 13.074324324324325,
+      "ppi_index": 0.8933408029248759,
+      "sell_through_pct": 0.7437185929648241,
+      "units_on_hand": 51
+    },
+    {
+      "product_name": "White Widow | 510",
+      "category": "Vape",
+      "revenue": 32651.08,
+      "units": 719,
+      "avg_unit_cost": 26.411849791376916,
+      "ppi_index": 1.804665580726233,
+      "sell_through_pct": 0.9337662337662338,
+      "units_on_hand": 51
+    },
+    {
+      "product_name": "T-Shirt | Beige | 2xl",
+      "category": "Accessories",
+      "revenue": 0.0,
+      "units": 1,
+      "avg_unit_cost": 17.95,
+      "ppi_index": 1.2264853628166539,
+      "sell_through_pct": 0.0196078431372549,
+      "units_on_hand": 50
+    },
+    {
+      "product_name": "Rocket Pop | Single",
+      "category": "Beverages",
+      "revenue": 341.25,
+      "units": 70,
+      "avg_unit_cost": 2.0,
+      "ppi_index": 0.1366557507316606,
+      "sell_through_pct": 0.5833333333333334,
+      "units_on_hand": 50
+    },
+    {
+      "product_name": "Kiwi | 1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 10286.55,
+      "units": 470,
+      "avg_unit_cost": 12.611170212765957,
+      "ppi_index": 0.8616944665151439,
+      "sell_through_pct": 0.9038461538461539,
+      "units_on_hand": 50
+    },
+    {
+      "product_name": "Berry Rntz | Single",
+      "category": "Beverages",
+      "revenue": 800.5,
+      "units": 190,
+      "avg_unit_cost": 2.003368421052632,
+      "ppi_index": 0.13688590778552448,
+      "sell_through_pct": 0.7916666666666666,
+      "units_on_hand": 50
+    },
+    {
+      "product_name": "Honeycrisp | All-In-One",
+      "category": "Disposable",
+      "revenue": 42469.38,
+      "units": 1314,
+      "avg_unit_cost": 15.724885844748858,
+      "ppi_index": 1.0744480401419092,
+      "sell_through_pct": 0.9633431085043989,
+      "units_on_hand": 50
+    },
+    {
+      "product_name": "Offline | Cherry Berry  | 10:10:4 | 10pk",
+      "category": "Edibles",
+      "revenue": 16768.64,
+      "units": 573,
+      "avg_unit_cost": 13.85019197207679,
+      "ppi_index": 0.9463541908608863,
+      "sell_through_pct": 0.9197431781701445,
+      "units_on_hand": 50
+    },
+    {
+      "product_name": "Baby Jeeter | Infused | Apples & Bananas | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 60.0,
+      "units": 1,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.02,
+      "units_on_hand": 49
+    },
+    {
+      "product_name": "White Truffle",
+      "category": "Flower",
+      "revenue": 2467.5,
+      "units": 51,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.51,
+      "units_on_hand": 49
+    },
+    {
+      "product_name": "T-Shirt | Gray | Large",
+      "category": "Accessories",
+      "revenue": 38.0,
+      "units": 1,
+      "avg_unit_cost": 15.45,
+      "ppi_index": 1.0556656744020783,
+      "sell_through_pct": 0.02,
+      "units_on_hand": 49
+    },
+    {
+      "product_name": "T-Shirt | Beige | Large",
+      "category": "Accessories",
+      "revenue": 0.0,
+      "units": 1,
+      "avg_unit_cost": 15.85,
+      "ppi_index": 1.0829968245484103,
+      "sell_through_pct": 0.02,
+      "units_on_hand": 49
+    },
+    {
+      "product_name": "Sativa Variety Pack | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 506.0,
+      "units": 11,
+      "avg_unit_cost": 23.0,
+      "ppi_index": 1.571541133414097,
+      "sell_through_pct": 0.18333333333333332,
+      "units_on_hand": 49
+    },
+    {
+      "product_name": "Morning Green |  70g",
+      "category": "Flower",
+      "revenue": 12683.25,
+      "units": 41,
+      "avg_unit_cost": 148.0,
+      "ppi_index": 10.112525554142884,
+      "sell_through_pct": 0.45555555555555555,
+      "units_on_hand": 49
+    },
+    {
+      "product_name": "Gelato",
+      "category": "Disposable",
+      "revenue": 9300.0,
+      "units": 158,
+      "avg_unit_cost": 28.18424050632911,
+      "ppi_index": 1.9257692725970414,
+      "sell_through_pct": 0.7669902912621359,
+      "units_on_hand": 48
+    },
+    {
+      "product_name": "Dragon Fruit X Frose | Live Resin | 10pk",
+      "category": "Edibles",
+      "revenue": 26699.76,
+      "units": 1609,
+      "avg_unit_cost": 13.81466749533872,
+      "ppi_index": 0.9439268788418911,
+      "sell_through_pct": 0.9716183574879227,
+      "units_on_hand": 47
+    },
+    {
+      "product_name": "Dream | Blueberry Muffin | Single",
+      "category": "Pre-Rolls",
+      "revenue": 6495.67,
+      "units": 753,
+      "avg_unit_cost": 7.5,
+      "ppi_index": 0.5124590652437273,
+      "sell_through_pct": 0.94125,
+      "units_on_hand": 47
+    },
+    {
+      "product_name": "Jeeter | Infused | Blue Skz",
+      "category": "Pre-Rolls",
+      "revenue": 15.0,
+      "units": 3,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.06,
+      "units_on_hand": 47
+    },
+    {
+      "product_name": "Raspberry | 10pk",
+      "category": "Edibles",
+      "revenue": 32972.08,
+      "units": 1390,
+      "avg_unit_cost": 11.201438848920864,
+      "ppi_index": 0.7653705175870344,
+      "sell_through_pct": 0.9672929714683368,
+      "units_on_hand": 47
+    },
+    {
+      "product_name": "Lively Lemon | 3pk",
+      "category": "Beverages",
+      "revenue": 1470.0,
+      "units": 99,
+      "avg_unit_cost": 7.490000000000004,
+      "ppi_index": 0.5117757864900693,
+      "sell_through_pct": 0.6827586206896552,
+      "units_on_hand": 46
+    },
+    {
+      "product_name": "Hibiscus Lime Gem Hash 20pk",
+      "category": "Edibles",
+      "revenue": 24629.12,
+      "units": 709,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1957378189020302,
+      "sell_through_pct": 0.9390728476821192,
+      "units_on_hand": 46
+    },
+    {
+      "product_name": "Doobies | Sunset Sherbet | Hash Infused | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 49970.81,
+      "units": 815,
+      "avg_unit_cost": 29.60122699386503,
+      "ppi_index": 2.0225889487124613,
+      "sell_through_pct": 0.9465737514518002,
+      "units_on_hand": 46
+    },
+    {
+      "product_name": "Tahoe X  Galactic Deathstar",
+      "category": "Pre-Rolls",
+      "revenue": 5999.5,
+      "units": 93,
+      "avg_unit_cost": 32.5,
+      "ppi_index": 2.220655949389485,
+      "sell_through_pct": 0.6690647482014388,
+      "units_on_hand": 46
+    },
+    {
+      "product_name": "Headband | All-In-One",
+      "category": "Disposable",
+      "revenue": 13220.39,
+      "units": 305,
+      "avg_unit_cost": 21.80455737704918,
+      "ppi_index": 1.489859078866112,
+      "sell_through_pct": 0.8689458689458689,
+      "units_on_hand": 46
+    },
+    {
+      "product_name": "White Widow  | All-In-One",
+      "category": "Disposable",
+      "revenue": 33686.11,
+      "units": 421,
+      "avg_unit_cost": 40.65346793349169,
+      "ppi_index": 2.777765090148399,
+      "sell_through_pct": 0.9014989293361885,
+      "units_on_hand": 46
+    },
+    {
+      "product_name": "Megan Foxx | Jar | 7g",
+      "category": "Flower",
+      "revenue": 4824.0,
+      "units": 55,
+      "avg_unit_cost": 45.0,
+      "ppi_index": 3.074754391462364,
+      "sell_through_pct": 0.55,
+      "units_on_hand": 45
+    },
+    {
+      "product_name": "Serenity Now | Lemon  Lavender Serenity | 1:12| 20pk",
+      "category": "Edibles",
+      "revenue": 27774.3,
+      "units": 853,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.9498886414253898,
+      "units_on_hand": 45
+    },
+    {
+      "product_name": "Thorny Berry X Og Kush | Live Resin",
+      "category": "Edibles",
+      "revenue": 45086.2,
+      "units": 1518,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9712092130518234,
+      "units_on_hand": 45
+    },
+    {
+      "product_name": "Jeeter | Infused | Pina Colada",
+      "category": "Pre-Rolls",
+      "revenue": 25.0,
+      "units": 5,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.1,
+      "units_on_hand": 45
+    },
+    {
+      "product_name": "Sherblato",
+      "category": "Flower",
+      "revenue": 32172.02,
+      "units": 410,
+      "avg_unit_cost": 39.8049268292683,
+      "ppi_index": 2.719786079336239,
+      "sell_through_pct": 0.9050772626931567,
+      "units_on_hand": 43
+    },
+    {
+      "product_name": "Pomegranate | 1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 5793.56,
+      "units": 375,
+      "avg_unit_cost": 8.43512,
+      "ppi_index": 0.5763538280558225,
+      "sell_through_pct": 0.8971291866028708,
+      "units_on_hand": 43
+    },
+    {
+      "product_name": "Elderberry | 2:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 28526.12,
+      "units": 1057,
+      "avg_unit_cost": 12.926206244087039,
+      "ppi_index": 0.8832202091989967,
+      "sell_through_pct": 0.9609090909090909,
+      "units_on_hand": 43
+    },
+    {
+      "product_name": "Peanut Butter Bomb | Live Resin Infused | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 2300.0,
+      "units": 58,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.5742574257425742,
+      "units_on_hand": 43
+    },
+    {
+      "product_name": "Alaskan Thunder Fu@K | All-In-One .5g",
+      "category": "Disposable",
+      "revenue": 49688.19,
+      "units": 1550,
+      "avg_unit_cost": 15.969354838709677,
+      "ppi_index": 1.091152087092074,
+      "sell_through_pct": 0.9730069052102951,
+      "units_on_hand": 43
+    },
+    {
+      "product_name": "Balance | Yuzu Lemon | 1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 63195.32,
+      "units": 2118,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.980101804720037,
+      "units_on_hand": 43
+    },
+    {
+      "product_name": "Weekend | All-In-One",
+      "category": "Disposable",
+      "revenue": 11932.25,
+      "units": 219,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.8390804597701149,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Beanie | Black",
+      "category": "Accessories",
+      "revenue": 319.5,
+      "units": 22,
+      "avg_unit_cost": 14.44,
+      "ppi_index": 0.9866545202825896,
+      "sell_through_pct": 0.34375,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Chemgurl",
+      "category": "Flower",
+      "revenue": 46603.56,
+      "units": 429,
+      "avg_unit_cost": 46.95104895104895,
+      "ppi_index": 3.2080654210222703,
+      "sell_through_pct": 0.910828025477707,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Baby Jeeter | Infused | Acapulco Gold | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 474.0,
+      "units": 8,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.16,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Lime Haze | All-In-One",
+      "category": "Disposable",
+      "revenue": 395.0,
+      "units": 8,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.16,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Blood Orange | 1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 25404.94,
+      "units": 980,
+      "avg_unit_cost": 12.980612244897959,
+      "ppi_index": 0.8869376556415585,
+      "sell_through_pct": 0.958904109589041,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Minis Natural Brown Artisan Pre Rolled Tubes With Spiral Filter Tips [10 Tubes Per Pack]",
+      "category": "Accessories",
+      "revenue": 6.0,
+      "units": 2,
+      "avg_unit_cost": 1.36,
+      "ppi_index": 0.09292591049752923,
+      "sell_through_pct": 0.045454545454545456,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Dream | Blueberry Muffin | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 16820.31,
+      "units": 395,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.9038901601830663,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Blueberry 2.0 X Turbo Blueberry Resin | Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 500.8,
+      "units": 33,
+      "avg_unit_cost": 8.0,
+      "ppi_index": 0.5466230029266425,
+      "sell_through_pct": 0.44,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Tahoe Og",
+      "category": "Disposable",
+      "revenue": 2099.5,
+      "units": 33,
+      "avg_unit_cost": 32.15303030303029,
+      "ppi_index": 2.1969482471792188,
+      "sell_through_pct": 0.44,
+      "units_on_hand": 42
+    },
+    {
+      "product_name": "Double Grape | Single",
+      "category": "Pre-Rolls",
+      "revenue": 469.6,
+      "units": 59,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.59,
+      "units_on_hand": 41
+    },
+    {
+      "product_name": "Glow | Candy Rain | Single",
+      "category": "Pre-Rolls",
+      "revenue": 6542.05,
+      "units": 1013,
+      "avg_unit_cost": 7.5,
+      "ppi_index": 0.5124590652437273,
+      "sell_through_pct": 0.961100569259962,
+      "units_on_hand": 41
+    },
+    {
+      "product_name": "Higgs | 55's | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 24490.0,
+      "units": 497,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.9237918215613383,
+      "units_on_hand": 41
+    },
+    {
+      "product_name": "Jeeter | Infused | Berry White",
+      "category": "Pre-Rolls",
+      "revenue": 45.24,
+      "units": 33,
+      "avg_unit_cost": 1.6436363636363638,
+      "ppi_index": 0.112306180601292,
+      "sell_through_pct": 0.44594594594594594,
+      "units_on_hand": 41
+    },
+    {
+      "product_name": "Wedding Cake | 510",
+      "category": "Vape",
+      "revenue": 70156.2,
+      "units": 1574,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.9752168525402726,
+      "units_on_hand": 40
+    },
+    {
+      "product_name": "Blue Dream | All-In-One",
+      "category": "Disposable",
+      "revenue": 65748.72,
+      "units": 1303,
+      "avg_unit_cost": 24.892248656945508,
+      "ppi_index": 1.7008344638070294,
+      "sell_through_pct": 0.9702159344750558,
+      "units_on_hand": 40
+    },
+    {
+      "product_name": "Huckleberry | 10pk",
+      "category": "Edibles",
+      "revenue": 25634.89,
+      "units": 1082,
+      "avg_unit_cost": 11.181839186691313,
+      "ppi_index": 0.7640313143090013,
+      "sell_through_pct": 0.964349376114082,
+      "units_on_hand": 40
+    },
+    {
+      "product_name": "Sour Diesel",
+      "category": "Concentrate",
+      "revenue": 14153.88,
+      "units": 165,
+      "avg_unit_cost": 42.72727272727273,
+      "ppi_index": 2.919463765630931,
+      "sell_through_pct": 0.8048780487804879,
+      "units_on_hand": 40
+    },
+    {
+      "product_name": "Sit | Fat Billy | Infused | 1g",
+      "category": "Pre-Rolls",
+      "revenue": 263.25,
+      "units": 10,
+      "avg_unit_cost": 13.5,
+      "ppi_index": 0.9224263174387091,
+      "sell_through_pct": 0.2,
+      "units_on_hand": 40
+    },
+    {
+      "product_name": "Headband | 510",
+      "category": "Vape",
+      "revenue": 42628.69,
+      "units": 954,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.959758551307847,
+      "units_on_hand": 40
+    },
+    {
+      "product_name": "Blue Dream",
+      "category": "Disposable",
+      "revenue": 5727.0,
+      "units": 96,
+      "avg_unit_cost": 28.175312499999993,
+      "ppi_index": 1.9251592408933202,
+      "sell_through_pct": 0.7111111111111111,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Fixer Upper | Mango Ginger | 1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 18271.14,
+      "units": 563,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.9352159468438538,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Lady Indica",
+      "category": "Flower",
+      "revenue": 62571.0,
+      "units": 579,
+      "avg_unit_cost": 46.984455958549226,
+      "ppi_index": 3.2103480508670947,
+      "sell_through_pct": 0.9368932038834952,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Berry Runtz",
+      "category": "Beverages",
+      "revenue": 1752.6,
+      "units": 42,
+      "avg_unit_cost": 23.387142857142855,
+      "ppi_index": 1.5979937823057255,
+      "sell_through_pct": 0.5185185185185185,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Half Gram 1 1/4 Natural Brown Artisan Pre Rolled Tubes With Spiral Filter Tips [10 Tubes Per Pack]",
+      "category": "Accessories",
+      "revenue": 23.75,
+      "units": 5,
+      "avg_unit_cost": 1.3400000000000003,
+      "ppi_index": 0.09155935299021263,
+      "sell_through_pct": 0.11363636363636363,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Lychee Dream | All-In-One",
+      "category": "Disposable",
+      "revenue": 80.0,
+      "units": 1,
+      "avg_unit_cost": 32.0,
+      "ppi_index": 2.18649201170657,
+      "sell_through_pct": 0.025,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Offline  | All-In-One",
+      "category": "Disposable",
+      "revenue": 4571.4,
+      "units": 121,
+      "avg_unit_cost": 18.455041322314045,
+      "ppi_index": 1.2609937633423223,
+      "sell_through_pct": 0.75625,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Granddaddy Purple | Live Blend | Starter Kit",
+      "category": "Vape",
+      "revenue": 3183.5,
+      "units": 56,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.5894736842105263,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Super Sour Diesel | All-In-One",
+      "category": "Disposable",
+      "revenue": 54866.84,
+      "units": 1085,
+      "avg_unit_cost": 25.20215668202765,
+      "ppi_index": 1.7220098207197125,
+      "sell_through_pct": 0.9653024911032029,
+      "units_on_hand": 39
+    },
+    {
+      "product_name": "Chimera X Jack Herer",
+      "category": "Pre-Rolls",
+      "revenue": 10662.0,
+      "units": 180,
+      "avg_unit_cost": 30.0,
+      "ppi_index": 2.0498362609749092,
+      "sell_through_pct": 0.8256880733944955,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Neapolitan | All-In-One",
+      "category": "Disposable",
+      "revenue": 14346.98,
+      "units": 182,
+      "avg_unit_cost": 35.16483516483517,
+      "ppi_index": 2.402738474402824,
+      "sell_through_pct": 0.8272727272727273,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Classics | Tangie | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 42290.0,
+      "units": 850,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.9572072072072072,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "2.5\" Glass Hand Pipe | Orange",
+      "category": "Accessories",
+      "revenue": 71.4,
+      "units": 12,
+      "avg_unit_cost": 1.0999999999999999,
+      "ppi_index": 0.07516066290241333,
+      "sell_through_pct": 0.24,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Lemon Cherry Gelato  | High Purity | All-In-One",
+      "category": "Disposable",
+      "revenue": 2491.5,
+      "units": 46,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.5476190476190477,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Fernway Sour Diesel | All-In-One",
+      "category": "Disposable",
+      "revenue": 6470.0,
+      "units": 130,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.7738095238095238,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Permanent Marker  | Live Rosin With Diamonds | Pod",
+      "category": "Vape",
+      "revenue": 21586.4,
+      "units": 253,
+      "avg_unit_cost": 44.0,
+      "ppi_index": 3.0064265160965333,
+      "sell_through_pct": 0.8694158075601375,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Jeeter | Infused | Pink Lemon",
+      "category": "Pre-Rolls",
+      "revenue": 60.0,
+      "units": 12,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.24,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Glacial Melt | All-In-One",
+      "category": "Disposable",
+      "revenue": 2432.0,
+      "units": 31,
+      "avg_unit_cost": 32.0,
+      "ppi_index": 2.18649201170657,
+      "sell_through_pct": 0.4492753623188406,
+      "units_on_hand": 38
+    },
+    {
+      "product_name": "Cherry Patties",
+      "category": "Flower",
+      "revenue": 14131.63,
+      "units": 122,
+      "avg_unit_cost": 74.39999999999999,
+      "ppi_index": 5.083593927217774,
+      "sell_through_pct": 0.7672955974842768,
+      "units_on_hand": 37
+    },
+    {
+      "product_name": "Lift | Ak-47 | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 18409.89,
+      "units": 436,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.9217758985200846,
+      "units_on_hand": 37
+    },
+    {
+      "product_name": "Dialed | All-In-One",
+      "category": "Disposable",
+      "revenue": 5753.2,
+      "units": 153,
+      "avg_unit_cost": 18.55875816993464,
+      "ppi_index": 1.268080515179879,
+      "sell_through_pct": 0.8052631578947368,
+      "units_on_hand": 37
+    },
+    {
+      "product_name": "Bubba Kush  | All-In_One",
+      "category": "Disposable",
+      "revenue": 5296.0,
+      "units": 68,
+      "avg_unit_cost": 35.1764705882353,
+      "ppi_index": 2.4035334981627368,
+      "sell_through_pct": 0.6538461538461539,
+      "units_on_hand": 36
+    },
+    {
+      "product_name": "Caramel Cream",
+      "category": "Flower",
+      "revenue": 2944.5,
+      "units": 99,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.7333333333333333,
+      "units_on_hand": 36
+    },
+    {
+      "product_name": "Sour Jack | Cartridge",
+      "category": "Vape",
+      "revenue": 2552.0,
+      "units": 64,
+      "avg_unit_cost": 28.237812500000004,
+      "ppi_index": 1.9294297331036854,
+      "sell_through_pct": 0.64,
+      "units_on_hand": 36
+    },
+    {
+      "product_name": "Blueberry Haze | Pod",
+      "category": "Vape",
+      "revenue": 24163.77,
+      "units": 456,
+      "avg_unit_cost": 28.294956140350877,
+      "ppi_index": 1.9333342366395296,
+      "sell_through_pct": 0.926829268292683,
+      "units_on_hand": 36
+    },
+    {
+      "product_name": "Madd Fruit",
+      "category": "Flower",
+      "revenue": 1132.8,
+      "units": 24,
+      "avg_unit_cost": 24.0,
+      "ppi_index": 1.6398690087799273,
+      "sell_through_pct": 0.4,
+      "units_on_hand": 36
+    },
+    {
+      "product_name": "Gal Pal | Watermelon | 1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 17086.03,
+      "units": 524,
+      "avg_unit_cost": 15.770992366412214,
+      "ppi_index": 1.0775984008076749,
+      "sell_through_pct": 0.9357142857142857,
+      "units_on_hand": 36
+    },
+    {
+      "product_name": "Liquid Gold Infused | Strawberry Sourz | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2442.75,
+      "units": 164,
+      "avg_unit_cost": 6.524390243902439,
+      "ppi_index": 0.445797723423405,
+      "sell_through_pct": 0.8241206030150754,
+      "units_on_hand": 35
+    },
+    {
+      "product_name": "T-Shirt | Beige | Xs",
+      "category": "Accessories",
+      "revenue": 38.0,
+      "units": 1,
+      "avg_unit_cost": 15.85,
+      "ppi_index": 1.0829968245484103,
+      "sell_through_pct": 0.027777777777777776,
+      "units_on_hand": 35
+    },
+    {
+      "product_name": "Sours | Balance | Orchard Peach | 1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 21390.57,
+      "units": 722,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9537648612945839,
+      "units_on_hand": 35
+    },
+    {
+      "product_name": "Berry Gelato | All-In-One",
+      "category": "Disposable",
+      "revenue": 4404.0,
+      "units": 56,
+      "avg_unit_cost": 32.0,
+      "ppi_index": 2.18649201170657,
+      "sell_through_pct": 0.6153846153846154,
+      "units_on_hand": 35
+    },
+    {
+      "product_name": "Up | High Dose Drops",
+      "category": "Tincture",
+      "revenue": 54354.0,
+      "units": 918,
+      "avg_unit_cost": 30.0,
+      "ppi_index": 2.0498362609749092,
+      "sell_through_pct": 0.9632738719832109,
+      "units_on_hand": 35
+    },
+    {
+      "product_name": "Jack Herer | 510",
+      "category": "Vape",
+      "revenue": 2986.5,
+      "units": 55,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.6111111111111112,
+      "units_on_hand": 35
+    },
+    {
+      "product_name": "Good Tide Gummies: Passion Fruit  | Live Rosin | Sleep",
+      "category": "Edibles",
+      "revenue": 2357.6,
+      "units": 85,
+      "avg_unit_cost": 14.0,
+      "ppi_index": 0.9565902551216242,
+      "sell_through_pct": 0.7083333333333334,
+      "units_on_hand": 35
+    },
+    {
+      "product_name": "Juicy Peach X Mimosa | Live Resin | 10pk",
+      "category": "Edibles",
+      "revenue": 40042.18,
+      "units": 1350,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9754335260115607,
+      "units_on_hand": 34
+    },
+    {
+      "product_name": "King Louie | All-In-One",
+      "category": "Disposable",
+      "revenue": 8415.0,
+      "units": 170,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.8333333333333334,
+      "units_on_hand": 34
+    },
+    {
+      "product_name": "Electric Love | Mandarin Rose | Live Blend | 5:10 | 20pk",
+      "category": "Edibles",
+      "revenue": 2416.9,
+      "units": 95,
+      "avg_unit_cost": 12.81578947368421,
+      "ppi_index": 0.8756756658726147,
+      "sell_through_pct": 0.7364341085271318,
+      "units_on_hand": 34
+    },
+    {
+      "product_name": "Unbleached Cones | 70s L 8pk",
+      "category": "Accessories",
+      "revenue": 880.8,
+      "units": 298,
+      "avg_unit_cost": 1.2734228187919463,
+      "ppi_index": 0.08701027565042041,
+      "sell_through_pct": 0.8975903614457831,
+      "units_on_hand": 34
+    },
+    {
+      "product_name": "Guava Gelato | Live Rosin With Diamonds | All-In-One",
+      "category": "Disposable",
+      "revenue": 38173.6,
+      "units": 452,
+      "avg_unit_cost": 44.0,
+      "ppi_index": 3.0064265160965333,
+      "sell_through_pct": 0.9300411522633745,
+      "units_on_hand": 34
+    },
+    {
+      "product_name": "Gs Mints",
+      "category": "Flower",
+      "revenue": 1680.06,
+      "units": 16,
+      "avg_unit_cost": 74.4,
+      "ppi_index": 5.083593927217775,
+      "sell_through_pct": 0.32,
+      "units_on_hand": 34
+    },
+    {
+      "product_name": "Amnesia Haze | 510",
+      "category": "Vape",
+      "revenue": 48968.28,
+      "units": 1098,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.537377195731182,
+      "sell_through_pct": 0.9708222811671088,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "T-Shirt | Beige | Xl",
+      "category": "Accessories",
+      "revenue": 0.0,
+      "units": 2,
+      "avg_unit_cost": 15.85,
+      "ppi_index": 1.0829968245484103,
+      "sell_through_pct": 0.05714285714285714,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "Sour Diesel",
+      "category": "Disposable",
+      "revenue": 10614.0,
+      "units": 178,
+      "avg_unit_cost": 28.460730337078648,
+      "ppi_index": 1.9446612352924153,
+      "sell_through_pct": 0.8436018957345972,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "Go Tin | 1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 10507.0,
+      "units": 303,
+      "avg_unit_cost": 17.50475247524755,
+      "ppi_index": 1.1960625454384242,
+      "sell_through_pct": 0.9017857142857143,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "White Widow | Pod",
+      "category": "Vape",
+      "revenue": 39095.64,
+      "units": 689,
+      "avg_unit_cost": 29.25036284470247,
+      "ppi_index": 1.998615146858144,
+      "sell_through_pct": 0.9542936288088643,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "Alpine Strawberry  | All-In-One",
+      "category": "Disposable",
+      "revenue": 68016.6,
+      "units": 837,
+      "avg_unit_cost": 41.42191158900836,
+      "ppi_index": 2.830271212468205,
+      "sell_through_pct": 0.9620689655172414,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "Wedding Sherb \u00d7 Blue Dream \u00d7 Tangie | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 4244.5,
+      "units": 67,
+      "avg_unit_cost": 32.5,
+      "ppi_index": 2.220655949389485,
+      "sell_through_pct": 0.67,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "Aluminum Multi-Hitter With Cooling Spiral | Black",
+      "category": "Accessories",
+      "revenue": 1375.2,
+      "units": 77,
+      "avg_unit_cost": 8.0,
+      "ppi_index": 0.5466230029266425,
+      "sell_through_pct": 0.7,
+      "units_on_hand": 33
+    },
+    {
+      "product_name": "Be Open | Rose Petals | 6pk",
+      "category": "Pre-Rolls",
+      "revenue": 6041.01,
+      "units": 88,
+      "avg_unit_cost": 29.659204545454546,
+      "ppi_index": 2.026550431631486,
+      "sell_through_pct": 0.7333333333333333,
+      "units_on_hand": 32
+    },
+    {
+      "product_name": "Unbleached Cones | 6pk",
+      "category": "Accessories",
+      "revenue": 2777.93,
+      "units": 935,
+      "avg_unit_cost": 1.093764705882354,
+      "ppi_index": 0.07473461850307353,
+      "sell_through_pct": 0.9669079627714581,
+      "units_on_hand": 32
+    },
+    {
+      "product_name": "Tahoe Og | All-In-One",
+      "category": "Disposable",
+      "revenue": 1278.98,
+      "units": 16,
+      "avg_unit_cost": 32.0,
+      "ppi_index": 2.18649201170657,
+      "sell_through_pct": 0.3333333333333333,
+      "units_on_hand": 32
+    },
+    {
+      "product_name": "Pineapple Express| Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 3976.8,
+      "units": 167,
+      "avg_unit_cost": 12.0,
+      "ppi_index": 0.8199345043899636,
+      "sell_through_pct": 0.8391959798994975,
+      "units_on_hand": 32
+    },
+    {
+      "product_name": "Pineapple Express | All-In-One",
+      "category": "Disposable",
+      "revenue": 31656.0,
+      "units": 588,
+      "avg_unit_cost": 25.816326530612244,
+      "ppi_index": 1.7639747415872518,
+      "sell_through_pct": 0.9483870967741935,
+      "units_on_hand": 32
+    },
+    {
+      "product_name": "Black Cherry Gelato | Live Blend | Starter Kit",
+      "category": "Vape",
+      "revenue": 3821.5,
+      "units": 65,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.6770833333333334,
+      "units_on_hand": 31
+    },
+    {
+      "product_name": "Stonefruit | 510",
+      "category": "Vape",
+      "revenue": 4675.44,
+      "units": 138,
+      "avg_unit_cost": 18.509565217391305,
+      "ppi_index": 1.2647192652496209,
+      "sell_through_pct": 0.8165680473372781,
+      "units_on_hand": 31
+    },
+    {
+      "product_name": "Up | Orchard Sunrise | Apple | 2:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 19662.17,
+      "units": 793,
+      "avg_unit_cost": 12.5,
+      "ppi_index": 0.8540984420728788,
+      "sell_through_pct": 0.962378640776699,
+      "units_on_hand": 31
+    },
+    {
+      "product_name": "Black Cardamom | Single",
+      "category": "Beverages",
+      "revenue": 4248.0,
+      "units": 855,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.9661016949152542,
+      "units_on_hand": 30
+    },
+    {
+      "product_name": "Cake Boss",
+      "category": "Flower",
+      "revenue": 4800.0,
+      "units": 21,
+      "avg_unit_cost": 119.04761904761905,
+      "ppi_index": 8.13427087688456,
+      "sell_through_pct": 0.4117647058823529,
+      "units_on_hand": 30
+    },
+    {
+      "product_name": "Orange Creamsicle | All-In-One",
+      "category": "Disposable",
+      "revenue": 2392.0,
+      "units": 30,
+      "avg_unit_cost": 32.0,
+      "ppi_index": 2.18649201170657,
+      "sell_through_pct": 0.5,
+      "units_on_hand": 30
+    },
+    {
+      "product_name": "Megan Foxx | Blunt",
+      "category": "Pre-Rolls",
+      "revenue": 1173.0,
+      "units": 70,
+      "avg_unit_cost": 8.5,
+      "ppi_index": 0.5807869406095576,
+      "sell_through_pct": 0.7,
+      "units_on_hand": 30
+    },
+    {
+      "product_name": "Blue Dream | Live Rosin With Diamonds | Pod",
+      "category": "Vape",
+      "revenue": 40469.32,
+      "units": 468,
+      "avg_unit_cost": 44.0,
+      "ppi_index": 3.0064265160965333,
+      "sell_through_pct": 0.9397590361445783,
+      "units_on_hand": 30
+    },
+    {
+      "product_name": "Go | All-In-One",
+      "category": "Disposable",
+      "revenue": 5627.8,
+      "units": 149,
+      "avg_unit_cost": 18.66281879194631,
+      "ppi_index": 1.2751907563911833,
+      "sell_through_pct": 0.8370786516853933,
+      "units_on_hand": 29
+    },
+    {
+      "product_name": "T-Shirt | Beige | Small",
+      "category": "Accessories",
+      "revenue": 114.0,
+      "units": 3,
+      "avg_unit_cost": 15.85,
+      "ppi_index": 1.0829968245484103,
+      "sell_through_pct": 0.09375,
+      "units_on_hand": 29
+    },
+    {
+      "product_name": "Lucys | Kombucha | Infused | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 7457.5,
+      "units": 151,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.8388888888888889,
+      "units_on_hand": 29
+    },
+    {
+      "product_name": "T-Shirt | Teal | Medium",
+      "category": "Accessories",
+      "revenue": 38.0,
+      "units": 1,
+      "avg_unit_cost": 15.85,
+      "ppi_index": 1.0829968245484103,
+      "sell_through_pct": 0.03333333333333333,
+      "units_on_hand": 29
+    },
+    {
+      "product_name": "Classic | Apricot Punch | All-In-One",
+      "category": "Disposable",
+      "revenue": 21647.01,
+      "units": 381,
+      "avg_unit_cost": 28.81233595800525,
+      "ppi_index": 1.9686857003370135,
+      "sell_through_pct": 0.9292682926829269,
+      "units_on_hand": 29
+    },
+    {
+      "product_name": "Royal Rntz  | Infused | Pre-Ground",
+      "category": "Flower",
+      "revenue": 3564.01,
+      "units": 34,
+      "avg_unit_cost": 51.970882352941175,
+      "ppi_index": 3.551059972063994,
+      "sell_through_pct": 0.5483870967741935,
+      "units_on_hand": 28
+    },
+    {
+      "product_name": "Marionberry | 10pk",
+      "category": "Edibles",
+      "revenue": 18039.02,
+      "units": 750,
+      "avg_unit_cost": 11.163333333333334,
+      "ppi_index": 0.762766848667219,
+      "sell_through_pct": 0.9640102827763496,
+      "units_on_hand": 28
+    },
+    {
+      "product_name": "Candy Rain X Super Runtz Resin | Infused | 2pk",
+      "category": "Pre-Rolls",
+      "revenue": 675.0,
+      "units": 23,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.46,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "King Size White Rolling Papers With Filter Tips",
+      "category": "Accessories",
+      "revenue": 151.05,
+      "units": 51,
+      "avg_unit_cost": 1.0399999999999998,
+      "ppi_index": 0.0710609903804635,
+      "sell_through_pct": 0.6538461538461539,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Strawberry Lemonade Gem Hash 20pk",
+      "category": "Edibles",
+      "revenue": 27972.96,
+      "units": 804,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1957378189020302,
+      "sell_through_pct": 0.9675090252707581,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Banana Og | Live Resin | All-In-One",
+      "category": "Disposable",
+      "revenue": 2712.41,
+      "units": 75,
+      "avg_unit_cost": 36.4,
+      "ppi_index": 2.487134663316223,
+      "sell_through_pct": 0.7352941176470589,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Up | Sunny Days | Pink Lemonade | 2:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 7972.14,
+      "units": 323,
+      "avg_unit_cost": 12.5,
+      "ppi_index": 0.8540984420728788,
+      "sell_through_pct": 0.9228571428571428,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Gogurtz | Live Resin | 510",
+      "category": "Vape",
+      "revenue": 1047.2,
+      "units": 24,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.47058823529411764,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Skywalker Og | 510",
+      "category": "Vape",
+      "revenue": 1032.0,
+      "units": 13,
+      "avg_unit_cost": 40.0,
+      "ppi_index": 2.733115014633212,
+      "sell_through_pct": 0.325,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Kosher Kush",
+      "category": "Flower",
+      "revenue": 5732.8,
+      "units": 181,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.8701923076923077,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Baked Limez | Single",
+      "category": "Pre-Rolls",
+      "revenue": 871.2,
+      "units": 73,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4099672521949818,
+      "sell_through_pct": 0.73,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Pumpkin Spice | Pro | All-In-One",
+      "category": "Disposable",
+      "revenue": 730.4,
+      "units": 9,
+      "avg_unit_cost": 41.5,
+      "ppi_index": 2.8356068276819575,
+      "sell_through_pct": 0.25,
+      "units_on_hand": 27
+    },
+    {
+      "product_name": "Live | Super Sour Diesel | All-In-One",
+      "category": "Disposable",
+      "revenue": 18112.36,
+      "units": 305,
+      "avg_unit_cost": 30.0,
+      "ppi_index": 2.0498362609749092,
+      "sell_through_pct": 0.9214501510574018,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Sweet Dreams Blend | 4:1 | All-In-One",
+      "category": "Disposable",
+      "revenue": 4303.4,
+      "units": 98,
+      "avg_unit_cost": 21.020408163265305,
+      "ppi_index": 1.4362798291184737,
+      "sell_through_pct": 0.7903225806451613,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Original | Tips | 50ct",
+      "category": "Accessories",
+      "revenue": 839.3,
+      "units": 850,
+      "avg_unit_cost": 12.545882352941172,
+      "ppi_index": 0.8572334857661342,
+      "sell_through_pct": 0.9703196347031964,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Protab+ | Lights Out | 5:3:1 | 5pk",
+      "category": "Edibles",
+      "revenue": 10118.1,
+      "units": 295,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.9190031152647975,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Sour Diesel | Live Blend | Starter Kit",
+      "category": "Vape",
+      "revenue": 4974.5,
+      "units": 90,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.7758620689655172,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Pink Rozay | All-In-One",
+      "category": "Disposable",
+      "revenue": 6150.0,
+      "units": 205,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.8874458874458875,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Blue Zashimi  | Live Resin",
+      "category": "Concentrate",
+      "revenue": 1395.0,
+      "units": 24,
+      "avg_unit_cost": 29.0,
+      "ppi_index": 1.9815083856090787,
+      "sell_through_pct": 0.48,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Nighttime Tincture | 1:1:2",
+      "category": "Tincture",
+      "revenue": 6249.6,
+      "units": 151,
+      "avg_unit_cost": 17.503311258278146,
+      "ppi_index": 1.1959640701449634,
+      "sell_through_pct": 0.8531073446327684,
+      "units_on_hand": 26
+    },
+    {
+      "product_name": "Pineapple Runtz | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 9299.0,
+      "units": 275,
+      "avg_unit_cost": 17.0,
+      "ppi_index": 1.1615738812191152,
+      "sell_through_pct": 0.9166666666666666,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Sunset Sherbet | 28g",
+      "category": "Flower",
+      "revenue": 6125.0,
+      "units": 25,
+      "avg_unit_cost": 125.0,
+      "ppi_index": 8.540984420728789,
+      "sell_through_pct": 0.5,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Lobotomy | Single",
+      "category": "Pre-Rolls",
+      "revenue": 17455.04,
+      "units": 1250,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.9803921568627451,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Snoozzzeberry | 5:1 Chocolate",
+      "category": "Edibles",
+      "revenue": 1292.8,
+      "units": 54,
+      "avg_unit_cost": 11.453703703703704,
+      "ppi_index": 0.7826072391438157,
+      "sell_through_pct": 0.6835443037974683,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Sudzz | 510",
+      "category": "Vape",
+      "revenue": 1259.5,
+      "units": 23,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.4791666666666667,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Night Cap | Elderberry Sage | Live Blend | 5:10:15 | 20pk",
+      "category": "Edibles",
+      "revenue": 5877.9,
+      "units": 220,
+      "avg_unit_cost": 13.113636363636363,
+      "ppi_index": 0.8960269110473655,
+      "sell_through_pct": 0.8979591836734694,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Lift | Ak Z | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 10454.4,
+      "units": 307,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.9246987951807228,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Strawberry Shortcake  | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 13839.01,
+      "units": 350,
+      "avg_unit_cost": 18.572142857142858,
+      "ppi_index": 1.2689950624192528,
+      "sell_through_pct": 0.9333333333333333,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Animal Face",
+      "category": "Vape",
+      "revenue": 2166.0,
+      "units": 55,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.6875,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Stay | Rainbow Zlushie | .75g",
+      "category": "Pre-Rolls",
+      "revenue": 400.0,
+      "units": 25,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.5,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Fernway Cuban Black Haze | All-In-One",
+      "category": "Disposable",
+      "revenue": 10070.0,
+      "units": 203,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.8903508771929824,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Peach | 2:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 1921.79,
+      "units": 97,
+      "avg_unit_cost": 10.567216494845361,
+      "ppi_index": 0.72203545162354,
+      "sell_through_pct": 0.7950819672131147,
+      "units_on_hand": 25
+    },
+    {
+      "product_name": "Red Headed Stranger | Pro | All-In-One",
+      "category": "Disposable",
+      "revenue": 979.4,
+      "units": 12,
+      "avg_unit_cost": 41.5,
+      "ppi_index": 2.8356068276819575,
+      "sell_through_pct": 0.3333333333333333,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Bucket Hat | Cloud",
+      "category": "Accessories",
+      "revenue": 2157.01,
+      "units": 81,
+      "avg_unit_cost": 13.866049382716051,
+      "ppi_index": 0.9474376940386706,
+      "sell_through_pct": 0.7714285714285715,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Black Cherry | Single",
+      "category": "Beverages",
+      "revenue": 4385.58,
+      "units": 884,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.973568281938326,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Maple Nitro Coffee | Single",
+      "category": "Beverages",
+      "revenue": 3431.4,
+      "units": 577,
+      "avg_unit_cost": 3.0,
+      "ppi_index": 0.2049836260974909,
+      "sell_through_pct": 0.9600665557404326,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Raspberry Lime  | Single",
+      "category": "Beverages",
+      "revenue": 7427.59,
+      "units": 1501,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.9842622950819672,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Grape Guava X Petro Chem | Infused | 4pk",
+      "category": "Pre-Rolls",
+      "revenue": 1255.0,
+      "units": 26,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.52,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Ice Cream Cake",
+      "category": "Flower",
+      "revenue": 1694.43,
+      "units": 39,
+      "avg_unit_cost": 22.154615384615383,
+      "ppi_index": 1.5137777987779064,
+      "sell_through_pct": 0.6190476190476191,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Maui Wowie | All-In-One",
+      "category": "Disposable",
+      "revenue": 45985.65,
+      "units": 914,
+      "avg_unit_cost": 24.75687089715536,
+      "ppi_index": 1.6915843891087827,
+      "sell_through_pct": 0.9744136460554371,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Space Queen  | 510",
+      "category": "Vape",
+      "revenue": 8525.7,
+      "units": 242,
+      "avg_unit_cost": 19.94595041322314,
+      "ppi_index": 1.3628644138877422,
+      "sell_through_pct": 0.9097744360902256,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Ruby Rose Petal | Ghost Train Haze #2 | Hash Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 1344.0,
+      "units": 45,
+      "avg_unit_cost": 14.0,
+      "ppi_index": 0.9565902551216242,
+      "sell_through_pct": 0.6521739130434783,
+      "units_on_hand": 24
+    },
+    {
+      "product_name": "Pick Me Up Pmu | Thcv | Oral Solution",
+      "category": "Cbd",
+      "revenue": 1450.5,
+      "units": 49,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.6805555555555556,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Play | Lemon Gelato Cookies | Infused | 1g",
+      "category": "Pre-Rolls",
+      "revenue": 723.6,
+      "units": 27,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.683278753658303,
+      "sell_through_pct": 0.54,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Mimosa Kush Mints",
+      "category": "Flower",
+      "revenue": 2551.5,
+      "units": 57,
+      "avg_unit_cost": 16.898245614035083,
+      "ppi_index": 1.1546212202169777,
+      "sell_through_pct": 0.7125,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Honey Banana | All-In-One",
+      "category": "Disposable",
+      "revenue": 27684.13,
+      "units": 552,
+      "avg_unit_cost": 25.391304347826086,
+      "ppi_index": 1.734933878854126,
+      "sell_through_pct": 0.96,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Durban Guava | Live Resin | 510",
+      "category": "Vape",
+      "revenue": 845.0,
+      "units": 17,
+      "avg_unit_cost": 25.069999999999997,
+      "ppi_index": 1.7129798354213654,
+      "sell_through_pct": 0.425,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Sherbert Drip | Bubble Hash Infused | | Single",
+      "category": "Pre-Rolls",
+      "revenue": 2209.2,
+      "units": 157,
+      "avg_unit_cost": 7.254777070063694,
+      "ppi_index": 0.49570350345019565,
+      "sell_through_pct": 0.8722222222222222,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Up | Half + Half | Iced Tea Lemonade | 2:1 | Single",
+      "category": "Beverages",
+      "revenue": 19017.32,
+      "units": 3879,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.9941055868785238,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Quiet Times | Chem D | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 2590.0,
+      "units": 76,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.7676767676767676,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Glow | Candy Rain | 7pk",
+      "category": "Pre-Rolls",
+      "revenue": 31564.92,
+      "units": 830,
+      "avg_unit_cost": 20.04746987951807,
+      "ppi_index": 1.3698010233279476,
+      "sell_through_pct": 0.9730363423212193,
+      "units_on_hand": 23
+    },
+    {
+      "product_name": "Permanent Marker",
+      "category": "Flower",
+      "revenue": 7980.67,
+      "units": 209,
+      "avg_unit_cost": 23.028373205741627,
+      "ppi_index": 1.57347981427974,
+      "sell_through_pct": 0.9047619047619048,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Baby Jeeter | Infused | Gelato | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 180.0,
+      "units": 3,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.12,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Purple Trainwreck | Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 7810.8,
+      "units": 227,
+      "avg_unit_cost": 16.613832599118954,
+      "ppi_index": 1.1351878831813684,
+      "sell_through_pct": 0.9116465863453815,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Kosher Kush | Live Resin",
+      "category": "Concentrate",
+      "revenue": 1674.0,
+      "units": 28,
+      "avg_unit_cost": 29.892857142857142,
+      "ppi_index": 2.042515417185713,
+      "sell_through_pct": 0.56,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Zonutz",
+      "category": "Flower",
+      "revenue": 4174.8,
+      "units": 78,
+      "avg_unit_cost": 27.0,
+      "ppi_index": 1.8448526348774181,
+      "sell_through_pct": 0.78,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Alpine Strawberry | Pro | All-In-One",
+      "category": "Disposable",
+      "revenue": 166.0,
+      "units": 2,
+      "avg_unit_cost": 41.5,
+      "ppi_index": 2.8356068276819575,
+      "sell_through_pct": 0.08333333333333333,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Quick | Strawberry Margarita | 1:1 | 10pk",
+      "category": "Edibles",
+      "revenue": 22066.28,
+      "units": 705,
+      "avg_unit_cost": 14.692198581560284,
+      "ppi_index": 1.0038867135308798,
+      "sell_through_pct": 0.9697386519944979,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Sicilian Lemon & Rose | Single",
+      "category": "Beverages",
+      "revenue": 8715.62,
+      "units": 1754,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17081968841457576,
+      "sell_through_pct": 0.9876126126126126,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Gdp | Syrup",
+      "category": "Beverages",
+      "revenue": 5162.0,
+      "units": 119,
+      "avg_unit_cost": 21.836806722689072,
+      "ppi_index": 1.4920626081356243,
+      "sell_through_pct": 0.8439716312056738,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Singapore Sling",
+      "category": "Flower",
+      "revenue": 7083.0,
+      "units": 159,
+      "avg_unit_cost": 18.540880503144653,
+      "ppi_index": 1.2668589721916208,
+      "sell_through_pct": 0.8784530386740331,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Mfny Skunk | Tincture",
+      "category": "Tincture",
+      "revenue": 5071.2,
+      "units": 108,
+      "avg_unit_cost": 24.0,
+      "ppi_index": 1.6398690087799273,
+      "sell_through_pct": 0.8307692307692308,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Kosher Kush",
+      "category": "Vape",
+      "revenue": 1529.0,
+      "units": 28,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.56,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Daytime Tincture | 1:2:4:4",
+      "category": "Tincture",
+      "revenue": 1688.4,
+      "units": 41,
+      "avg_unit_cost": 21.0,
+      "ppi_index": 1.4348853826824364,
+      "sell_through_pct": 0.6507936507936508,
+      "units_on_hand": 22
+    },
+    {
+      "product_name": "Neon Nectar | All-In-One",
+      "category": "Disposable",
+      "revenue": 16706.03,
+      "units": 284,
+      "avg_unit_cost": 28.961267605633804,
+      "ppi_index": 1.978861883394205,
+      "sell_through_pct": 0.9311475409836065,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Silly Goofy | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 40559.63,
+      "units": 926,
+      "avg_unit_cost": 22.0,
+      "ppi_index": 1.5032132580482667,
+      "sell_through_pct": 0.9778247096092925,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Harney Brothers | Little Bro Royal Thcv | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 2637.6,
+      "units": 79,
+      "avg_unit_cost": 13.974683544303797,
+      "ppi_index": 0.9548604354921095,
+      "sell_through_pct": 0.79,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Pomme Jelly | Smalls",
+      "category": "Flower",
+      "revenue": 3053.0,
+      "units": 9,
+      "avg_unit_cost": 148.0,
+      "ppi_index": 10.112525554142884,
+      "sell_through_pct": 0.3,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Purple Afghani | Live Rosin With Diamonds | Pod 1g",
+      "category": "Vape",
+      "revenue": 24757.92,
+      "units": 289,
+      "avg_unit_cost": 44.0,
+      "ppi_index": 3.0064265160965333,
+      "sell_through_pct": 0.932258064516129,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Lively Lemon | 10pk",
+      "category": "Beverages",
+      "revenue": 1064.0,
+      "units": 27,
+      "avg_unit_cost": 19.989999999999995,
+      "ppi_index": 1.3658742285629475,
+      "sell_through_pct": 0.5625,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Rainbow Sherbet  | All-In-One",
+      "category": "Disposable",
+      "revenue": 5350.5,
+      "units": 109,
+      "avg_unit_cost": 25.25229357798165,
+      "ppi_index": 1.7254355682976872,
+      "sell_through_pct": 0.8384615384615385,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "White Chocolate Chip",
+      "category": "Flower",
+      "revenue": 2207.48,
+      "units": 46,
+      "avg_unit_cost": 24.772391304347824,
+      "ppi_index": 1.6926448655570565,
+      "sell_through_pct": 0.6865671641791045,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Downtime | Blueberry | 4:1 | All-In-One",
+      "category": "Disposable",
+      "revenue": 15718.04,
+      "units": 350,
+      "avg_unit_cost": 23.042857142857144,
+      "ppi_index": 1.5744694709297755,
+      "sell_through_pct": 0.9433962264150944,
+      "units_on_hand": 21
+    },
+    {
+      "product_name": "Daytime Chews | Mango X Blood Orange | 1:1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 24256.19,
+      "units": 829,
+      "avg_unit_cost": 14.68636911942099,
+      "ppi_index": 1.0034883987683763,
+      "sell_through_pct": 0.9764428739693758,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "Huckleberry | Anytime | 20pk",
+      "category": "Edibles",
+      "revenue": 2874.83,
+      "units": 97,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.8290598290598291,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "Guava Gelato",
+      "category": "Pre-Rolls",
+      "revenue": 4329.0,
+      "units": 220,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.683278753658303,
+      "sell_through_pct": 0.9166666666666666,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "Petals Mini Lotus Cones 3pk",
+      "category": "Accessories",
+      "revenue": 1816.8,
+      "units": 229,
+      "avg_unit_cost": 4.0,
+      "ppi_index": 0.2733115014633212,
+      "sell_through_pct": 0.9196787148594378,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "Berry Haze | Pro | All-In-One",
+      "category": "Disposable",
+      "revenue": 323.7,
+      "units": 4,
+      "avg_unit_cost": 41.5,
+      "ppi_index": 2.8356068276819575,
+      "sell_through_pct": 0.16666666666666666,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "T-Shirt | Gray | Xl",
+      "category": "Accessories",
+      "revenue": 0.0,
+      "units": 1,
+      "avg_unit_cost": 15.45,
+      "ppi_index": 1.0556656744020783,
+      "sell_through_pct": 0.047619047619047616,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "Kush | 510",
+      "category": "Vape",
+      "revenue": 2029.68,
+      "units": 50,
+      "avg_unit_cost": 20.71,
+      "ppi_index": 1.4150702988263457,
+      "sell_through_pct": 0.7142857142857143,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "Electric Lime X Electric Lime | Infused | 4pk",
+      "category": "Pre-Rolls",
+      "revenue": 1495.0,
+      "units": 30,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.6,
+      "units_on_hand": 20
+    },
+    {
+      "product_name": "Mango Cherry Gelato | Hash",
+      "category": "Concentrate",
+      "revenue": 516.0,
+      "units": 11,
+      "avg_unit_cost": 24.0,
+      "ppi_index": 1.6398690087799273,
+      "sell_through_pct": 0.36666666666666664,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Pick Me Up | Lions Mane Mango | Live Blend | 20pk",
+      "category": "Edibles",
+      "revenue": 10140.19,
+      "units": 376,
+      "avg_unit_cost": 14.34441489361702,
+      "ppi_index": 0.9801233930468237,
+      "sell_through_pct": 0.9518987341772152,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Super Jack | Infused | Single",
+      "category": "Pre-Rolls",
+      "revenue": 1212.0,
+      "units": 41,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.6833333333333333,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Gorilla Glue X Modified Grapes | Live Nugs",
+      "category": "Flower",
+      "revenue": 1533.0,
+      "units": 18,
+      "avg_unit_cost": 43.0,
+      "ppi_index": 2.9380986407307033,
+      "sell_through_pct": 0.4864864864864865,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Relief Pm | Plum | 4pk",
+      "category": "Edibles",
+      "revenue": 1641.45,
+      "units": 54,
+      "avg_unit_cost": 15.360000000000001,
+      "ppi_index": 1.0495161656191536,
+      "sell_through_pct": 0.7397260273972602,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Berry Haze | 510",
+      "category": "Vape",
+      "revenue": 19772.29,
+      "units": 389,
+      "avg_unit_cost": 26.15740359897173,
+      "ppi_index": 1.7872798130042613,
+      "sell_through_pct": 0.9534313725490197,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "T-Shirt | Beige | Medium",
+      "category": "Accessories",
+      "revenue": 0.0,
+      "units": 2,
+      "avg_unit_cost": 15.85,
+      "ppi_index": 1.0829968245484103,
+      "sell_through_pct": 0.09523809523809523,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Tutti Frutti  | High Purity | All-In-One",
+      "category": "Disposable",
+      "revenue": 1584.0,
+      "units": 29,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.6041666666666666,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Pet Cbd Tincture For Dogs + Cats | 300mg Cbd + Wild Salmon Oil",
+      "category": "Cbd",
+      "revenue": 295.0,
+      "units": 6,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.24,
+      "units_on_hand": 19
+    },
+    {
+      "product_name": "Silly Goofy",
+      "category": "Pre-Rolls",
+      "revenue": 9507.26,
+      "units": 682,
+      "avg_unit_cost": 7.0,
+      "ppi_index": 0.4782951275608121,
+      "sell_through_pct": 0.9742857142857143,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Leisure | All-In-One |",
+      "category": "Disposable",
+      "revenue": 3426.5,
+      "units": 63,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.7777777777777778,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Womac | Infused | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 2201.25,
+      "units": 30,
+      "avg_unit_cost": 37.5,
+      "ppi_index": 2.5622953262186363,
+      "sell_through_pct": 0.625,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Slapz | Smalls",
+      "category": "Flower",
+      "revenue": 7453.6,
+      "units": 86,
+      "avg_unit_cost": 44.0,
+      "ppi_index": 3.0064265160965333,
+      "sell_through_pct": 0.8269230769230769,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Berry Haze | All-In-One 2g",
+      "category": "Disposable",
+      "revenue": 71428.74,
+      "units": 848,
+      "avg_unit_cost": 43.125,
+      "ppi_index": 2.9466396251514317,
+      "sell_through_pct": 0.9792147806004619,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Staycation | | All-In-One",
+      "category": "Disposable",
+      "revenue": 8299.5,
+      "units": 152,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.8941176470588236,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Nighttime | Chamomile Mint Tea Sachets | 5pk",
+      "category": "Beverages",
+      "revenue": 5640.0,
+      "units": 284,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.683278753658303,
+      "sell_through_pct": 0.9403973509933775,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Rescue Lotion",
+      "category": "Topical",
+      "revenue": 1104.0,
+      "units": 28,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.6086956521739131,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "Sour Diesel  | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 4554.0,
+      "units": 84,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.8235294117647058,
+      "units_on_hand": 18
+    },
+    {
+      "product_name": "T-Shirt | Black | Xl",
+      "category": "Accessories",
+      "revenue": 76.0,
+      "units": 2,
+      "avg_unit_cost": 18.1,
+      "ppi_index": 1.2367345441215285,
+      "sell_through_pct": 0.10526315789473684,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Petals Variety Mini Rose Cones 3pk",
+      "category": "Accessories",
+      "revenue": 1690.88,
+      "units": 189,
+      "avg_unit_cost": 4.5,
+      "ppi_index": 0.3074754391462364,
+      "sell_through_pct": 0.9174757281553398,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Jeeter | Infused | Xl | Maui Wowie",
+      "category": "Pre-Rolls",
+      "revenue": 132.0,
+      "units": 3,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.15,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Sleep | All-In-One",
+      "category": "Disposable",
+      "revenue": 10245.2,
+      "units": 151,
+      "avg_unit_cost": 33.145695364238414,
+      "ppi_index": 2.2647749417614618,
+      "sell_through_pct": 0.8988095238095238,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Dark Chocolate | Infused | 20 Pk",
+      "category": "Edibles",
+      "revenue": 10924.99,
+      "units": 367,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9557291666666666,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Be Still | Lavender | 6pk",
+      "category": "Pre-Rolls",
+      "revenue": 7538.72,
+      "units": 108,
+      "avg_unit_cost": 30.0,
+      "ppi_index": 2.0498362609749092,
+      "sell_through_pct": 0.864,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Deadly Flower Rolling Papers + Tips",
+      "category": "Accessories",
+      "revenue": 942.17,
+      "units": 190,
+      "avg_unit_cost": 2.25,
+      "ppi_index": 0.1537377195731182,
+      "sell_through_pct": 0.9178743961352657,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Bellini",
+      "category": "Vape",
+      "revenue": 7849.0,
+      "units": 113,
+      "avg_unit_cost": 34.90442477876108,
+      "ppi_index": 2.3849451859991864,
+      "sell_through_pct": 0.8692307692307693,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Protab+ | Boost | 6:3:1 | 5pk",
+      "category": "Edibles",
+      "revenue": 6399.1,
+      "units": 186,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.916256157635468,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Papaya | Live Resin | All-In-One",
+      "category": "Disposable",
+      "revenue": 7672.57,
+      "units": 154,
+      "avg_unit_cost": 38.73389610389611,
+      "ppi_index": 2.646604825420033,
+      "sell_through_pct": 0.9005847953216374,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Protab | Recover | 10pk",
+      "category": "Edibles",
+      "revenue": 789.6,
+      "units": 23,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.093246005853285,
+      "sell_through_pct": 0.575,
+      "units_on_hand": 17
+    },
+    {
+      "product_name": "Animal Mint Cake",
+      "category": "Flower",
+      "revenue": 12252.0,
+      "units": 104,
+      "avg_unit_cost": 56.48076923076923,
+      "ppi_index": 3.8592109605662235,
+      "sell_through_pct": 0.8666666666666667,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Restore | Lavender, Rosemary & Eucalyptus | 1:1 | Balm",
+      "category": "Topical",
+      "revenue": 8193.7,
+      "units": 150,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8790165725603334,
+      "sell_through_pct": 0.9036144578313253,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Moods | Golden Hour | All-In-One",
+      "category": "Disposable",
+      "revenue": 25633.5,
+      "units": 623,
+      "avg_unit_cost": 20.481540930979133,
+      "ppi_index": 1.3994601760320942,
+      "sell_through_pct": 0.974960876369327,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Beverage Enhancer Drops",
+      "category": "Beverages",
+      "revenue": 28883.53,
+      "units": 586,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.973421926910299,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Higgs | 84's | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 12070.0,
+      "units": 244,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7081968841457575,
+      "sell_through_pct": 0.9384615384615385,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Tropical Cookies",
+      "category": "Flower",
+      "revenue": 21371.0,
+      "units": 308,
+      "avg_unit_cost": 35.0,
+      "ppi_index": 2.3914756378040605,
+      "sell_through_pct": 0.9506172839506173,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Just The Plant | Tincture | Hybrid",
+      "category": "Tincture",
+      "revenue": 774.0,
+      "units": 9,
+      "avg_unit_cost": 45.0,
+      "ppi_index": 3.074754391462364,
+      "sell_through_pct": 0.36,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Mightnight Mint | Infused | 5:1 | 20ct",
+      "category": "Edibles",
+      "revenue": 4767.57,
+      "units": 218,
+      "avg_unit_cost": 11.080596330275228,
+      "ppi_index": 0.7571136050341224,
+      "sell_through_pct": 0.9316239316239316,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Space Queen | Pro | All-In-One",
+      "category": "Disposable",
+      "revenue": 634.95,
+      "units": 8,
+      "avg_unit_cost": 41.5,
+      "ppi_index": 2.8356068276819575,
+      "sell_through_pct": 0.3333333333333333,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Animal Cookies",
+      "category": "Flower",
+      "revenue": 8275.0,
+      "units": 35,
+      "avg_unit_cost": 121.42857142857143,
+      "ppi_index": 8.296956294422252,
+      "sell_through_pct": 0.6862745098039216,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Do-Si-Do | 510",
+      "category": "Vape",
+      "revenue": 23332.85,
+      "units": 484,
+      "avg_unit_cost": 22.33884297520661,
+      "ppi_index": 1.526365678626771,
+      "sell_through_pct": 0.968,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Green Crush | All-In-One",
+      "category": "Disposable",
+      "revenue": 10592.0,
+      "units": 134,
+      "avg_unit_cost": 32.0,
+      "ppi_index": 2.18649201170657,
+      "sell_through_pct": 0.8933333333333333,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Sit | Blue Zashimi | .75g",
+      "category": "Pre-Rolls",
+      "revenue": 526.4,
+      "units": 33,
+      "avg_unit_cost": 5.0,
+      "ppi_index": 0.3416393768291515,
+      "sell_through_pct": 0.673469387755102,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Downtime | 1:1 | 20pk",
+      "category": "Edibles",
+      "revenue": 5231.23,
+      "units": 175,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0249181304874546,
+      "sell_through_pct": 0.9162303664921466,
+      "units_on_hand": 16
+    },
+    {
+      "product_name": "Gogurtz | Live Resin",
+      "category": "Concentrate",
+      "revenue": 2187.0,
+      "units": 25,
+      "avg_unit_cost": 45.0,
+      "ppi_index": 3.074754391462364,
+      "sell_through_pct": 0.625,
+      "units_on_hand": 15
+    },
+    {
+      "product_name": "Suddz Concentrate | Live Resin",
+      "category": "Concentrate",
+      "revenue": 588.0,
+      "units": 10,
+      "avg_unit_cost": 30.0,
+      "ppi_index": 2.0498362609749092,
+      "sell_through_pct": 0.4,
+      "units_on_hand": 15
+    },
+    {
+      "product_name": "Queen Of The South | 10pk",
+      "category": "Pre-Rolls",
+      "revenue": 10267.75,
+      "units": 166,
+      "avg_unit_cost": 31.50602409638554,
+      "ppi_index": 2.1527396877306777,
+      "sell_through_pct": 0.9171270718232044,
+      "units_on_hand": 15
+    },
+    {
+      "product_name": "Grandaddy Purple | 510",
+      "category": "Vape",
+      "revenue": 15605.3,
+      "units": 276,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.366557507316606,
+      "sell_through_pct": 0.9484536082474226,
+      "units_on_hand": 15
+    },
+    {
+      "product_name": "Bubba Fett",
+      "category": "Flower",
+      "revenue": 20928.5,
+      "units": 122,
+      "avg_unit_cost": 93.36065573770492,
+      "ppi_index": 6.379135249318091,
+      "sell_through_pct": 0.8905109489051095,
+      "units_on_hand": 15
+    },
+    {
+      "product_name": "Everlasting Gumdrop | Diamond Infused | 5pk",
+      "category": "Pre-Rolls",
+      "revenue": 12067.99,
+      "units": 211,
+      "avg_unit_cost": 28.751184834123222,
+      "ppi_index": 1.964507373965922,
+      "sell_through_pct": 0.9336283185840708,
+      "units_on_hand": 15
+    },
+    {
+      "product_name": "Broadway Jack | Infused | Pre-Ground",
+      "category": "Flower",
+      "revenue": 43326.3,
+      "units": 403,
+      "avg_unit_cost": 53.80893300248139,
+      "ppi_index": 3.6766500677618614,
+      "sell_through_pct": 0.9641148325358851,
+      "units_on_hand": 15
+    }
+  ]
+}
+</script>
+  <script id="brand-data" type="application/json">
+{
+  "meta": {
+    "title": "Brand CRM with catalog and master order mapping",
+    "as_of": "2025-09-14",
+    "currency": "USD",
+    "notes": "Used catalog and master order sheet for brand mapping; accessories -> The Travel Agency"
+  },
+  "kpis": {
+    "total_revenue": 6788911.1800000025,
+    "total_units": 237285
+  },
+  "brands": [
+    {
+      "brand": "Ruby",
+      "revenue": 1114077.7,
+      "units": 32711,
+      "avg_unit_cost": 18.145843600012228,
+      "ppi_index": 1.2403005817152268,
+      "sell_through_pct": 0.9349911506557509,
+      "bei": 0.7538423866275545,
+      "revenue_share": 0.16410255937388762
+    },
+    {
+      "brand": "PAX",
+      "revenue": 598242.0299999999,
+      "units": 10374,
+      "avg_unit_cost": 28.720997686524004,
+      "ppi_index": 1.96313111273666,
+      "sell_through_pct": 0.9115117997978066,
+      "bei": 0.46431529401372157,
+      "revenue_share": 0.08812046794225399
+    },
+    {
+      "brand": "Camino",
+      "revenue": 473899.70999999996,
+      "units": 16519,
+      "avg_unit_cost": 14.53474060173134,
+      "ppi_index": 0.9934752894814523,
+      "sell_through_pct": 0.9570486425650133,
+      "bei": 0.9633341188229735,
+      "revenue_share": 0.06980496539652767
+    },
+    {
+      "brand": "Wyld",
+      "revenue": 349179.07,
+      "units": 13810,
+      "avg_unit_cost": 12.223790731354088,
+      "ppi_index": 0.8355177686450166,
+      "sell_through_pct": 0.9466691614609609,
+      "bei": 1.1330329491330888,
+      "revenue_share": 0.051433736683531024
+    },
+    {
+      "brand": "Heavy Hitters",
+      "revenue": 343894.45999999996,
+      "units": 7136,
+      "avg_unit_cost": NaN,
+      "ppi_index": NaN,
+      "sell_through_pct": 0.9027190953809606,
+      "bei": NaN,
+      "revenue_share": 0.05065531878117749
+    },
+    {
+      "brand": "Find.",
+      "revenue": 245762.8,
+      "units": 2021,
+      "avg_unit_cost": NaN,
+      "ppi_index": NaN,
+      "sell_through_pct": 0.8325547483415425,
+      "bei": NaN,
+      "revenue_share": 0.036200620907224756
+    },
+    {
+      "brand": "Gr\u00f6n",
+      "revenue": 237340.86000000002,
+      "units": 8499,
+      "avg_unit_cost": 13.412184962936816,
+      "ppi_index": 0.9167466213360034,
+      "sell_through_pct": 0.958106060953649,
+      "bei": 1.0451154535561542,
+      "revenue_share": 0.03496007735367072
+    },
+    {
+      "brand": "Ayrloom",
+      "revenue": 226422.37,
+      "units": 19758,
+      "avg_unit_cost": 6.08850339103148,
+      "ppi_index": 0.41616000138270715,
+      "sell_through_pct": 0.9436207240875933,
+      "bei": 2.2674469457717663,
+      "revenue_share": 0.03335179441837975
+    },
+    {
+      "brand": "Off Hours",
+      "revenue": 206179.83,
+      "units": 6759,
+      "avg_unit_cost": 14.587761503180944,
+      "ppi_index": 0.9970993620988844,
+      "sell_through_pct": 0.893784499137925,
+      "bei": 0.8963845862427566,
+      "revenue_share": 0.03037008800577649
+    },
+    {
+      "brand": "Eaton Botanicals",
+      "revenue": 154816.04,
+      "units": 5213,
+      "avg_unit_cost": 14.613466334164588,
+      "ppi_index": 0.9988563328699697,
+      "sell_through_pct": 0.9075239433796081,
+      "bei": 0.9085630370606549,
+      "revenue_share": 0.02280425180050742
+    },
+    {
+      "brand": "Fernway",
+      "revenue": 153875.29000000004,
+      "units": 2773,
+      "avg_unit_cost": 29.70007933645871,
+      "ppi_index": 2.0300530793714824,
+      "sell_through_pct": 0.8927260606414642,
+      "bei": 0.4397550338525424,
+      "revenue_share": 0.02266568024240965
+    },
+    {
+      "brand": "Lost Farm",
+      "revenue": 152931.16,
+      "units": 5892,
+      "avg_unit_cost": 14.594840461642907,
+      "ppi_index": 0.9975832214603915,
+      "sell_through_pct": 0.9518242787870247,
+      "bei": 0.9541302001788092,
+      "revenue_share": 0.02252661081360619
+    },
+    {
+      "brand": "Hepworth",
+      "revenue": 130306.03,
+      "units": 2724,
+      "avg_unit_cost": 23.49718795888399,
+      "ppi_index": 1.6060744563044838,
+      "sell_through_pct": 0.9527475911959973,
+      "bei": 0.5932150825611369,
+      "revenue_share": 0.019193951216194872
+    },
+    {
+      "brand": "Rove",
+      "revenue": 120323.42,
+      "units": 2497,
+      "avg_unit_cost": 24.631898277933523,
+      "ppi_index": 1.6836339183949902,
+      "sell_through_pct": 0.9035850203911111,
+      "bei": 0.5366873466486702,
+      "revenue_share": 0.017723522492748233
+    },
+    {
+      "brand": "Rolling Green Cannabis",
+      "revenue": 120259.94,
+      "units": 5522,
+      "avg_unit_cost": 10.48026620789569,
+      "ppi_index": 0.7163447762866588,
+      "sell_through_pct": 0.8451131652755915,
+      "bei": 1.179757559839319,
+      "revenue_share": 0.017714171950619032
+    },
+    {
+      "brand": "dank. by definition",
+      "revenue": 107225.2,
+      "units": 1844,
+      "avg_unit_cost": 29.619034707158352,
+      "ppi_index": 2.0245135352708123,
+      "sell_through_pct": 0.9119016762059611,
+      "bei": 0.45043002198746923,
+      "revenue_share": 0.015794167452931673
+    },
+    {
+      "brand": "Florist Farms",
+      "revenue": 103859.74,
+      "units": 2125,
+      "avg_unit_cost": 23.538823529411765,
+      "ppi_index": 1.6089203213677983,
+      "sell_through_pct": 0.9026790572317607,
+      "bei": 0.5610464640438889,
+      "revenue_share": 0.015298438475078115
+    },
+    {
+      "brand": "Grassroots",
+      "revenue": 97638.66,
+      "units": 2160,
+      "avg_unit_cost": 20.97065277777778,
+      "ppi_index": 1.4333812972579731,
+      "sell_through_pct": 0.7390517445176294,
+      "bei": 0.5156002425393851,
+      "revenue_share": 0.014382079454455313
+    },
+    {
+      "brand": "Weekenders",
+      "revenue": 96732.15,
+      "units": 4597,
+      "avg_unit_cost": 13.354992386338916,
+      "ppi_index": 0.9128374073260181,
+      "sell_through_pct": 0.945367918168581,
+      "bei": 1.0356366978187876,
+      "revenue_share": 0.014248551414985511
+    },
+    {
+      "brand": "The Travel Agency",
+      "revenue": 96179.22999999998,
+      "units": 21168,
+      "avg_unit_cost": 2.6445044406651537,
+      "ppi_index": 0.18075656709083948,
+      "sell_through_pct": 0.8096156739989406,
+      "bei": 4.479038781435072,
+      "revenue_share": 0.014167106837889128
+    },
+    {
+      "brand": "ayrloom",
+      "revenue": 92157.57,
+      "units": 2864,
+      "avg_unit_cost": 15.857192737430168,
+      "ppi_index": 1.083867237596595,
+      "sell_through_pct": 0.9685731660791681,
+      "bei": 0.8936271274578942,
+      "revenue_share": 0.013574720239601068
+    },
+    {
+      "brand": "Flamer",
+      "revenue": 90469.02999999998,
+      "units": 3364,
+      "avg_unit_cost": 13.660225921521997,
+      "ppi_index": 0.933700660619258,
+      "sell_through_pct": 0.9292467291665275,
+      "bei": 0.9952298079667454,
+      "revenue_share": 0.013325999943337004
+    },
+    {
+      "brand": "Harney Brothers Cannabis",
+      "revenue": 85304.1,
+      "units": 7873,
+      "avg_unit_cost": 5.210593166518481,
+      "ppi_index": 0.35615328104723126,
+      "sell_through_pct": 0.9579934534840557,
+      "bei": 2.689834698889132,
+      "revenue_share": 0.012565210788337338
+    },
+    {
+      "brand": "FlowerHouse",
+      "revenue": 79456.2,
+      "units": 1732,
+      "avg_unit_cost": 23.018539260969977,
+      "ppi_index": 1.5733579691823536,
+      "sell_through_pct": 0.9562215888670939,
+      "bei": 0.6077584425138961,
+      "revenue_share": 0.011703820817994552
+    },
+    {
+      "brand": "Nova",
+      "revenue": 68503.04,
+      "units": 2311,
+      "avg_unit_cost": 13.9929035049762,
+      "ppi_index": 0.9564397632687257,
+      "sell_through_pct": 0.9637197664720599,
+      "bei": 1.0076115647664565,
+      "revenue_share": 0.01009043102549472
+    },
+    {
+      "brand": "Toast",
+      "revenue": 67797.20000000001,
+      "units": 1078,
+      "avg_unit_cost": 31.351122448979595,
+      "ppi_index": 2.1429048033274403,
+      "sell_through_pct": 0.876110270098683,
+      "bei": 0.4088423660903109,
+      "revenue_share": 0.009986461481441857
+    },
+    {
+      "brand": "Rythm",
+      "revenue": 64936.18,
+      "units": 1225,
+      "avg_unit_cost": 29.172579591836737,
+      "ppi_index": 1.993997536596451,
+      "sell_through_pct": 0.8172057048202502,
+      "bei": 0.4098328557692887,
+      "revenue_share": 0.009565036023935722
+    },
+    {
+      "brand": "Higgs",
+      "revenue": 64748.9,
+      "units": 1308,
+      "avg_unit_cost": 25.0,
+      "ppi_index": 1.7087943237237961,
+      "sell_through_pct": 0.8940214898963554,
+      "bei": 0.5231884712421728,
+      "revenue_share": 0.009537449862468222
+    },
+    {
+      "brand": "Nanticoke",
+      "revenue": 64354.02,
+      "units": 6058,
+      "avg_unit_cost": 5.592934962033675,
+      "ppi_index": 0.3822870206431803,
+      "sell_through_pct": 0.9118152733009264,
+      "bei": 2.385158857255575,
+      "revenue_share": 0.009479284423338114
+    },
+    {
+      "brand": "Bloom",
+      "revenue": 57248.369999999995,
+      "units": 989,
+      "avg_unit_cost": 29.327603640040444,
+      "ppi_index": 2.004593705140898,
+      "sell_through_pct": 0.9000187215214385,
+      "bei": 0.44897812420207034,
+      "revenue_share": 0.008432629103861685
+    },
+    {
+      "brand": "Foy",
+      "revenue": 57209.990000000005,
+      "units": 1959,
+      "avg_unit_cost": 14.637059724349157,
+      "ppi_index": 1.0004689829189612,
+      "sell_through_pct": 0.9309284203995454,
+      "bei": 0.930492035528653,
+      "revenue_share": 0.008426975767268764
+    },
+    {
+      "brand": "Bettering Co.",
+      "revenue": 51959.69,
+      "units": 1868,
+      "avg_unit_cost": 13.93355460385439,
+      "ppi_index": 0.9523831606544779,
+      "sell_through_pct": 0.8990224251120122,
+      "bei": 0.9439713575933071,
+      "revenue_share": 0.007653611694474987
+    },
+    {
+      "brand": "Pura",
+      "revenue": 50032.16,
+      "units": 1751,
+      "avg_unit_cost": 14.613649343232439,
+      "ppi_index": 0.9988688418642229,
+      "sell_through_pct": 0.8624788913489927,
+      "bei": 0.8634555961714844,
+      "revenue_share": 0.007369688404142589
+    },
+    {
+      "brand": "Level",
+      "revenue": 49948.829999999994,
+      "units": 1626,
+      "avg_unit_cost": 15.195571955719558,
+      "ppi_index": 1.0386442841468033,
+      "sell_through_pct": 0.9468328954747849,
+      "bei": 0.9116045887188056,
+      "revenue_share": 0.007357413976360194
+    },
+    {
+      "brand": "Jaunty",
+      "revenue": 48968.28,
+      "units": 1098,
+      "avg_unit_cost": 22.5,
+      "ppi_index": 1.5379148913514165,
+      "sell_through_pct": 0.9708222811671088,
+      "bei": 0.6312587820214259,
+      "revenue_share": 0.0072129799170535
+    },
+    {
+      "brand": "Blotter",
+      "revenue": 46553.14,
+      "units": 840,
+      "avg_unit_cost": 28.486309523809524,
+      "ppi_index": 1.9470897607249933,
+      "sell_through_pct": 0.9335482529422973,
+      "bei": 0.47945825188598046,
+      "revenue_share": 0.006857232148970313
+    },
+    {
+      "brand": "Moods",
+      "revenue": 42896.5,
+      "units": 1017,
+      "avg_unit_cost": 21.853490658800393,
+      "ppi_index": 1.4937248316523646,
+      "sell_through_pct": 0.8246388488804562,
+      "bei": 0.5520687822858493,
+      "revenue_share": 0.006318612640915415
+    },
+    {
+      "brand": "Stone Road",
+      "revenue": 42744.0,
+      "units": 363,
+      "avg_unit_cost": 60.0,
+      "ppi_index": 4.1011063769371106,
+      "sell_through_pct": 0.7321083447757715,
+      "bei": 0.17851483904266408,
+      "revenue_share": 0.006296149539549579
+    },
+    {
+      "brand": "Platinum Reserve",
+      "revenue": 34639.520000000004,
+      "units": 461,
+      "avg_unit_cost": 38.16707158351411,
+      "ppi_index": 2.6087870110027485,
+      "sell_through_pct": 0.8613702336316578,
+      "bei": 0.33018035968393217,
+      "revenue_share": 0.005102367534583063
+    },
+    {
+      "brand": "Vessel",
+      "revenue": 32651.08,
+      "units": 719,
+      "avg_unit_cost": 26.411849791376916,
+      "ppi_index": 1.8052967601020162,
+      "sell_through_pct": 0.9337662337662338,
+      "bei": 0.5172369742210512,
+      "revenue_share": 0.004809472260616612
+    },
+    {
+      "brand": "Jams",
+      "revenue": 27972.96,
+      "units": 804,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1961560266066573,
+      "sell_through_pct": 0.9675090252707581,
+      "bei": 0.8088485145332238,
+      "revenue_share": 0.004120389744147454
+    },
+    {
+      "brand": "highland goat",
+      "revenue": 24629.12,
+      "units": 709,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1961560266066573,
+      "sell_through_pct": 0.9390728476821191,
+      "bei": 0.7850755476659257,
+      "revenue_share": 0.0036278453712219566
+    },
+    {
+      "brand": "Holiday",
+      "revenue": 23658.25,
+      "units": 434,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8796737560961758,
+      "sell_through_pct": 0.8494573802824802,
+      "bei": 0.4519174551049148,
+      "revenue_share": 0.003484837166480648
+    },
+    {
+      "brand": "Wana",
+      "revenue": 22066.28,
+      "units": 705,
+      "avg_unit_cost": 14.692198581560284,
+      "ppi_index": 1.004237821567721,
+      "sell_through_pct": 0.9697386519944979,
+      "bei": 0.9656464147911037,
+      "revenue_share": 0.0032503415370946113
+    },
+    {
+      "brand": "MFNY",
+      "revenue": 22047.6,
+      "units": 692,
+      "avg_unit_cost": 15.92293352601156,
+      "ppi_index": 1.0883607370511954,
+      "sell_through_pct": 0.7070404860072489,
+      "bei": 0.6496379940376243,
+      "revenue_share": 0.003247589991301078
+    },
+    {
+      "brand": "High 5s",
+      "revenue": 20906.0,
+      "units": 340,
+      "avg_unit_cost": 31.176470588235293,
+      "ppi_index": 2.130967038996734,
+      "sell_through_pct": 0.7521672788051263,
+      "bei": 0.35296992634820346,
+      "revenue_share": 0.003079433423961807
+    },
+    {
+      "brand": "High Peaks",
+      "revenue": 19592.32,
+      "units": 3996,
+      "avg_unit_cost": 2.4853603603603602,
+      "ppi_index": 0.16987878704767648,
+      "sell_through_pct": 0.9775718814235387,
+      "bei": 5.754525908812753,
+      "revenue_share": 0.0028859296403403517
+    },
+    {
+      "brand": "Select",
+      "revenue": 19226.98,
+      "units": 244,
+      "avg_unit_cost": 36.32786885245902,
+      "ppi_index": 2.4830742435225788,
+      "sell_through_pct": 0.7483482364629905,
+      "bei": 0.30137972652857803,
+      "revenue_share": 0.002832115414419075
+    },
+    {
+      "brand": "Anthem",
+      "revenue": 18532.5,
+      "units": 534,
+      "avg_unit_cost": 17.5,
+      "ppi_index": 1.1961560266066573,
+      "sell_through_pct": 0.6546731692339496,
+      "bei": 0.5473141920215661,
+      "revenue_share": 0.002729819187294183
+    },
+    {
+      "brand": "Good Green",
+      "revenue": 17276.760000000002,
+      "units": 486,
+      "avg_unit_cost": 17.516687242798355,
+      "ppi_index": 1.1972966292375544,
+      "sell_through_pct": 0.7108947282436366,
+      "bei": 0.5937498785880142,
+      "revenue_share": 0.0025448499092014924
+    },
+    {
+      "brand": "Canna Cure Farms",
+      "revenue": 16718.260000000002,
+      "units": 1628,
+      "avg_unit_cost": 5.052414004914006,
+      "ppi_index": 0.3453414549079866,
+      "sell_through_pct": 0.9099798748039954,
+      "bei": 2.635014887067213,
+      "revenue_share": 0.0024625834035436585
+    },
+    {
+      "brand": "Tune",
+      "revenue": 16143.210000000001,
+      "units": 3255,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17087943237237962,
+      "sell_through_pct": 0.9860676581998633,
+      "bei": 5.770546194529892,
+      "revenue_share": 0.0023778790990162868
+    },
+    {
+      "brand": "Kiva",
+      "revenue": 15692.56,
+      "units": 585,
+      "avg_unit_cost": 13.539435897435897,
+      "ppi_index": 0.9254444483184265,
+      "sell_through_pct": 0.9467463611293738,
+      "bei": 1.0230180351177791,
+      "revenue_share": 0.002311498793242423
+    },
+    {
+      "brand": "Drew Martin",
+      "revenue": 13579.73,
+      "units": 196,
+      "avg_unit_cost": 29.84698979591837,
+      "ppi_index": 2.040094669740295,
+      "sell_through_pct": 0.8053333333333332,
+      "bei": 0.3947529226356209,
+      "revenue_share": 0.0020002809935127175
+    },
+    {
+      "brand": "Beboe",
+      "revenue": 12409.46,
+      "units": 370,
+      "avg_unit_cost": 16.594594594594593,
+      "ppi_index": 1.1342699619096333,
+      "sell_through_pct": 0.8600290012382564,
+      "bei": 0.7582224956308722,
+      "revenue_share": 0.0018279013631166692
+    },
+    {
+      "brand": "STA Exotics",
+      "revenue": 12305.0,
+      "units": 831,
+      "avg_unit_cost": 8.211191335740072,
+      "ppi_index": 0.5612494858209061,
+      "sell_through_pct": 0.9233333333333333,
+      "bei": 1.6451388494063899,
+      "revenue_share": 0.0018125145069286346
+    },
+    {
+      "brand": "1906",
+      "revenue": 12148.45,
+      "units": 357,
+      "avg_unit_cost": 17.180336134453803,
+      "ppi_index": 1.1743064346488594,
+      "sell_through_pct": 0.8772724843362003,
+      "bei": 0.7470558437317274,
+      "revenue_share": 0.001789454844510132
+    },
+    {
+      "brand": "butter",
+      "revenue": 11953.4,
+      "units": 219,
+      "avg_unit_cost": 28.034246575342465,
+      "ppi_index": 1.916190456712739,
+      "sell_through_pct": 0.6333290757948292,
+      "bei": 0.33051468009151724,
+      "revenue_share": 0.0017607241696156637
+    },
+    {
+      "brand": "turn",
+      "revenue": 10384.98,
+      "units": 229,
+      "avg_unit_cost": 37.96951965065502,
+      "ppi_index": 2.595283986142338,
+      "sell_through_pct": 0.8464502938998322,
+      "bei": 0.3261493919045084,
+      "revenue_share": 0.0015296974322766138
+    },
+    {
+      "brand": "KOA",
+      "revenue": 10267.75,
+      "units": 166,
+      "avg_unit_cost": 31.50602409638554,
+      "ppi_index": 2.1534926055603503,
+      "sell_through_pct": 0.9171270718232044,
+      "bei": 0.4258789045549395,
+      "revenue_share": 0.0015124295675348629
+    },
+    {
+      "brand": "Ravens View Genetics",
+      "revenue": 8625.5,
+      "units": 328,
+      "avg_unit_cost": 13.003048780487806,
+      "ppi_index": 0.8887814378880476,
+      "sell_through_pct": 0.6339514542100844,
+      "bei": 0.7132816091619792,
+      "revenue_share": 0.0012705277431542413
+    },
+    {
+      "brand": "Good Tide",
+      "revenue": 8437.8,
+      "units": 305,
+      "avg_unit_cost": 12.557377049180328,
+      "ppi_index": 0.8583189848999527,
+      "sell_through_pct": 0.6684266848816031,
+      "bei": 0.7787625540631798,
+      "revenue_share": 0.0012428797160960936
+    },
+    {
+      "brand": "Jeeter",
+      "revenue": 8379.21,
+      "units": 498,
+      "avg_unit_cost": 9.077751004016063,
+      "ppi_index": 0.6204803755136257,
+      "sell_through_pct": 0.44727725164831994,
+      "bei": 0.7208564030378392,
+      "revenue_share": 0.001234249466200852
+    },
+    {
+      "brand": "Weed Water",
+      "revenue": 8247.900000000001,
+      "units": 831,
+      "avg_unit_cost": 5.121179302045728,
+      "ppi_index": 0.35004168488430126,
+      "sell_through_pct": 0.8060859379867279,
+      "bei": 2.30282841385923,
+      "revenue_share": 0.0012149076311821772
+    },
+    {
+      "brand": "Papa & Barkley",
+      "revenue": 8193.7,
+      "units": 150,
+      "avg_unit_cost": 27.5,
+      "ppi_index": 1.8796737560961758,
+      "sell_through_pct": 0.9036144578313252,
+      "bei": 0.4807294111016415,
+      "revenue_share": 0.0012069240240082206
+    },
+    {
+      "brand": "Umamii",
+      "revenue": 6953.73,
+      "units": 241,
+      "avg_unit_cost": 26.244813278008298,
+      "ppi_index": 1.7938795182660598,
+      "sell_through_pct": 0.6694444444444444,
+      "bei": 0.3731825006238549,
+      "revenue_share": 0.001024277651545295
+    },
+    {
+      "brand": "Hudson Cannabis",
+      "revenue": 6439.5,
+      "units": 609,
+      "avg_unit_cost": 5.254811165845648,
+      "ppi_index": 0.35917565969749865,
+      "sell_through_pct": 0.8726976376961117,
+      "bei": 2.4297237692306504,
+      "revenue_share": 0.0009485320737396947
+    },
+    {
+      "brand": "Dosist",
+      "revenue": 6399.1,
+      "units": 186,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.0936283671832296,
+      "sell_through_pct": 0.916256157635468,
+      "bei": 0.8378130863552808,
+      "revenue_share": 0.0009425811931155649
+    },
+    {
+      "brand": "Ithaca Organics",
+      "revenue": 6211.52,
+      "units": 338,
+      "avg_unit_cost": 9.201242603550297,
+      "ppi_index": 0.6289212452860924,
+      "sell_through_pct": 0.4121999030650204,
+      "bei": 0.6554078211772179,
+      "revenue_share": 0.0009149508419404595
+    },
+    {
+      "brand": "B Noble",
+      "revenue": 5914.76,
+      "units": 186,
+      "avg_unit_cost": 13.462365591397846,
+      "ppi_index": 0.9201765562590074,
+      "sell_through_pct": 0.6056530163385002,
+      "bei": 0.6581921830314742,
+      "revenue_share": 0.0008712383831776686
+    },
+    {
+      "brand": "Heavy Hiters",
+      "revenue": 5350.5,
+      "units": 109,
+      "avg_unit_cost": 25.25229357798165,
+      "ppi_index": 1.7260390370824765,
+      "sell_through_pct": 0.8384615384615385,
+      "bei": 0.4857720598711312,
+      "revenue_share": 0.0007881234351338204
+    },
+    {
+      "brand": "Rosa Reta",
+      "revenue": 4589.2,
+      "units": 327,
+      "avg_unit_cost": 7.244648318042813,
+      "ppi_index": 0.49518455692986824,
+      "sell_through_pct": 0.7870200475705063,
+      "bei": 1.5893469143101124,
+      "revenue_share": 0.0006759846871350581
+    },
+    {
+      "brand": "Dogwalkers",
+      "revenue": 4517.75,
+      "units": 196,
+      "avg_unit_cost": 10.346938775510203,
+      "ppi_index": 0.7072316099003793,
+      "sell_through_pct": 0.48099229487713446,
+      "bei": 0.6801057647082362,
+      "revenue_share": 0.0006654601717738187
+    },
+    {
+      "brand": "CAM",
+      "revenue": 4329.0,
+      "units": 220,
+      "avg_unit_cost": 10.0,
+      "ppi_index": 0.6835177294895185,
+      "sell_through_pct": 0.9166666666666666,
+      "bei": 1.3411015210260517,
+      "revenue_share": 0.0006376574807390541
+    },
+    {
+      "brand": "Priscillas Garden",
+      "revenue": 4174.8,
+      "units": 78,
+      "avg_unit_cost": 27.0,
+      "ppi_index": 1.8454978696217,
+      "sell_through_pct": 0.78,
+      "bei": 0.42265017632336177,
+      "revenue_share": 0.000614943971030123
+    },
+    {
+      "brand": "Lowell Farms",
+      "revenue": 3658.2,
+      "units": 88,
+      "avg_unit_cost": 20.710000000000004,
+      "ppi_index": 1.415565217772793,
+      "sell_through_pct": 0.55,
+      "bei": 0.3885373793412028,
+      "revenue_share": 0.0005388492945344438
+    },
+    {
+      "brand": "lay up",
+      "revenue": 2948.25,
+      "units": 603,
+      "avg_unit_cost": 2.5,
+      "ppi_index": 0.17087943237237962,
+      "sell_through_pct": 0.8360051593882439,
+      "bei": 4.8923685418525125,
+      "revenue_share": 0.00043427435148739107
+    },
+    {
+      "brand": "Miss Grass",
+      "revenue": 2590.0,
+      "units": 76,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.0936283671832296,
+      "sell_through_pct": 0.7676767676767676,
+      "bei": 0.7019539641734155,
+      "revenue_share": 0.00038150447565584426
+    },
+    {
+      "brand": "MyHi",
+      "revenue": 2534.0,
+      "units": 126,
+      "avg_unit_cost": 10.16857142857143,
+      "ppi_index": 0.6950398855009133,
+      "sell_through_pct": 0.6569889162561577,
+      "bei": 0.9452535458201332,
+      "revenue_share": 0.00037325573023625847
+    },
+    {
+      "brand": "&Shine",
+      "revenue": 2166.0,
+      "units": 55,
+      "avg_unit_cost": NaN,
+      "ppi_index": NaN,
+      "sell_through_pct": 0.6875,
+      "bei": NaN,
+      "revenue_share": 0.0003190496889075516
+    },
+    {
+      "brand": "Knack",
+      "revenue": 1627.2,
+      "units": 136,
+      "avg_unit_cost": 6.0,
+      "ppi_index": 0.4101106376937111,
+      "sell_through_pct": 0.49187499999999995,
+      "bei": 1.1993714739176167,
+      "revenue_share": 0.00023968497404910804
+    },
+    {
+      "brand": "Woodstock",
+      "revenue": 1533.0,
+      "units": 18,
+      "avg_unit_cost": 43.0,
+      "ppi_index": 2.9391262368049293,
+      "sell_through_pct": 0.48648648648648657,
+      "bei": 0.16552078655026983,
+      "revenue_share": 0.0002258094058611619
+    },
+    {
+      "brand": "Chime & Chill",
+      "revenue": 1450.5,
+      "units": 49,
+      "avg_unit_cost": 15.0,
+      "ppi_index": 1.0252765942342776,
+      "sell_through_pct": 0.6805555555555556,
+      "bei": 0.6637775205078439,
+      "revenue_share": 0.00021365723626980777
+    },
+    {
+      "brand": "Incredibles",
+      "revenue": 1292.8,
+      "units": 54,
+      "avg_unit_cost": 11.453703703703704,
+      "ppi_index": 0.7828809549801244,
+      "sell_through_pct": 0.6835443037974683,
+      "bei": 0.8731139765876945,
+      "revenue_share": 0.0001904281799721527
+    },
+    {
+      "brand": "Rhythm",
+      "revenue": 1259.5,
+      "units": 23,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.367035458979037,
+      "sell_through_pct": 0.4791666666666667,
+      "bei": 0.35051517026817264,
+      "revenue_share": 0.00018552312242800612
+    },
+    {
+      "brand": "Doctor Solomons",
+      "revenue": 1104.0,
+      "units": 28,
+      "avg_unit_cost": 20.0,
+      "ppi_index": 1.367035458979037,
+      "sell_through_pct": 0.6086956521739131,
+      "bei": 0.4452669081667524,
+      "revenue_share": 0.0001626181239861205
+    },
+    {
+      "brand": "Alchemy Pure",
+      "revenue": 453.7,
+      "units": 35,
+      "avg_unit_cost": 6.5,
+      "ppi_index": 0.444286524168187,
+      "sell_through_pct": 0.2692307692307692,
+      "bei": 0.6059845495760535,
+      "revenue_share": 6.682956780118013e-05
+    },
+    {
+      "brand": "TribeTokes",
+      "revenue": 295.0,
+      "units": 6,
+      "avg_unit_cost": 16.0,
+      "ppi_index": 1.0936283671832296,
+      "sell_through_pct": 0.24,
+      "bei": 0.21945297616789936,
+      "revenue_share": 4.345321247817531e-05
+    }
+  ]
+}
+</script>
+
+  <script>
+    // Embedded JSON strings will be inserted here by the build process (or manually)
+  </script>
+  <script>
+    // Load embedded data
+    const productData = JSON.parse(document.getElementById('product-data').textContent || '{}');
+    const brandData = JSON.parse(document.getElementById('brand-data').textContent || '{}');
+    let currentDataset = 'products';
+    let zoomLevel = 1;
+
+    const datasetSelect = document.getElementById('dataset-select');
+    const categoryFilter = document.getElementById('category-filter');
+    const kpiContainer = document.getElementById('kpi-container');
+    const tableHead = document.getElementById('table-head');
+    const tableBody = document.getElementById('table-body');
+    const overlay = document.getElementById('overlay');
+    const overlayContent = document.getElementById('overlay-content');
+    const overlayClose = document.getElementById('overlay-close');
+
+    function formatNumber(num) {
+      return num.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+
+    function updateCategories(data) {
+      // Populate category filter based on product categories
+      const cats = new Set();
+      data.products.forEach(p => cats.add(p.category));
+      categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+      Array.from(cats).sort().forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        categoryFilter.appendChild(opt);
+      });
+    }
+
+    function computeMetricRanges(items) {
+      const metrics = ['ppi_index', 'sell_through_pct', 'revenue_share', 'bei'];
+      const ranges = {};
+      metrics.forEach(m => {
+        const vals = items.map(i => i[m]);
+        ranges[m] = {min: Math.min(...vals), max: Math.max(...vals)};
+      });
+      return ranges;
+    }
+
+    function colorScale(value, min, max, reverse) {
+      // Normalize between 0 and 1
+      let ratio = (value - min) / (max - min);
+      ratio = Math.max(0, Math.min(1, ratio));
+      if (reverse) ratio = 1 - ratio;
+      const hue = 200 - ratio * 120; // blue to green to red
+      const light = 90 - ratio * 40;
+      return `hsl(${hue}, 70%, ${light}%)`;
+    }
+
+    function render() {
+      const data = currentDataset === 'products' ? productData : brandData;
+      if (!data || !data.products && !data.brands) return;
+      // Copy items array to avoid mutating original
+      let items = currentDataset === 'products' ? data.products.slice() : data.brands.slice();
+      // Filter by category if products
+      if (currentDataset === 'products') {
+        const cat = categoryFilter.value;
+        if (cat !== 'all') {
+          items = items.filter(i => i.category === cat);
+        }
+      }
+      // Sort by BEI descending
+      items.sort((a,b) => (b.bei || 0) - (a.bei || 0));
+      // Compute metric ranges
+      const ranges = computeMetricRanges(items);
+      // Update KPI cards
+      kpiContainer.innerHTML = '';
+      let totalRev, totalUnits;
+      if (currentDataset === 'products') {
+        // Sum across all products (not filtered)
+        totalRev = data.products.reduce((acc, p) => acc + (p.revenue || 0), 0);
+        totalUnits = data.products.reduce((acc, p) => acc + (p.units || 0), 0);
+      } else {
+        totalRev = data.kpis.total_revenue;
+        totalUnits = data.kpis.total_units;
+      }
+      const kpis = [
+        {title:'Total Revenue', value:`$${formatNumber(totalRev)}`},
+        {title:'Total Units', value:formatNumber(totalUnits)}
+      ];
+      kpis.forEach(k => {
+        const card=document.createElement('div');
+        card.className='kpi';
+        card.innerHTML=`<div class="kpi-title">${k.title}</div><div class="kpi-value">${k.value}</div>`;
+        kpiContainer.appendChild(card);
+      });
+      // Build table header
+      tableHead.innerHTML = '';
+      const headerRow = document.createElement('tr');
+      const nameHeader = document.createElement('th');
+      nameHeader.textContent = currentDataset === 'products' ? 'Product' : 'Brand';
+      headerRow.appendChild(nameHeader);
+      ['PPI', 'Sell‑Through', 'Revenue Share', 'BEI'].forEach(metric => {
+        const th = document.createElement('th');
+        th.textContent = metric;
+        headerRow.appendChild(th);
+      });
+      tableHead.appendChild(headerRow);
+      // Build table body
+      tableBody.innerHTML='';
+      items.forEach(item => {
+        const tr=document.createElement('tr');
+        // Name cell
+        const nameTd=document.createElement('td');
+        nameTd.className='row-name';
+        nameTd.textContent=item[currentDataset==='products'?'product_name':'brand'];
+        tr.appendChild(nameTd);
+        // Metric cells
+        ['ppi_index','sell_through_pct','revenue_share','bei'].forEach(key => {
+          const val=item[key];
+          const td=document.createElement('td');
+          td.className='heatmap-cell';
+          const range=ranges[key];
+          td.style.background=colorScale(val, range.min, range.max, key==='ppi_index');
+          td.textContent=(key==='sell_through_pct' || key==='revenue_share') ? (val*100).toFixed(1)+'%' : val.toFixed(3);
+          tr.appendChild(td);
+        });
+        tr.addEventListener('mouseenter', () => showOverlay(item));
+        tableBody.appendChild(tr);
+      });
+    }
+    function showOverlay(item) {
+      // Build overlay content based on dataset
+      const lines=[];
+      if (currentDataset==='products') {
+        lines.push(`<strong>Product:</strong> ${item.product_name}`);
+        lines.push(`<strong>Category:</strong> ${item.category}`);
+        lines.push(`<strong>Revenue:</strong> $${formatNumber(item.revenue)}`);
+        lines.push(`<strong>Units Sold:</strong> ${formatNumber(item.units)}`);
+        lines.push(`<strong>Units On Hand:</strong> ${formatNumber(item.units_on_hand)}`);
+        lines.push(`<strong>Avg Unit Cost:</strong> $${item.avg_unit_cost.toFixed(2)}`);
+      } else {
+        lines.push(`<strong>Brand:</strong> ${item.brand}`);
+        lines.push(`<strong>Revenue:</strong> $${formatNumber(item.revenue)}`);
+        lines.push(`<strong>Units Sold:</strong> ${formatNumber(item.units)}`);
+        lines.push(`<strong>Avg Unit Cost:</strong> $${item.avg_unit_cost.toFixed(2)}`);
+      }
+      lines.push(`<strong>PPI:</strong> ${item.ppi_index.toFixed(3)}`);
+      lines.push(`<strong>Sell‑Through:</strong> ${(item.sell_through_pct*100).toFixed(1)}%`);
+      lines.push(`<strong>Revenue Share:</strong> ${(item.revenue_share*100).toFixed(1)}%`);
+      lines.push(`<strong>BEI:</strong> ${item.bei.toFixed(3)}`);
+      overlayContent.innerHTML=lines.join('<br>');
+      overlay.style.display='block';
+    }
+    overlayClose.addEventListener('click', () => {
+      overlay.style.display='none';
+    });
+    // Event handlers
+    datasetSelect.addEventListener('change', () => {
+      currentDataset=datasetSelect.value;
+      if (currentDataset==='products') {
+        categoryFilter.style.display='inline-block';
+      } else {
+        categoryFilter.style.display='none';
+      }
+      render();
+    });
+    categoryFilter.addEventListener('change', render);
+    document.getElementById('zoom-in').addEventListener('click', () => {
+      zoomLevel=Math.min(2, zoomLevel+0.1);
+      tableBody.style.transform=`scale(${zoomLevel})`;
+    });
+    document.getElementById('zoom-out').addEventListener('click', () => {
+      zoomLevel=Math.max(0.5, zoomLevel-0.1);
+      tableBody.style.transform=`scale(${zoomLevel})`;
+    });
+    // Initialize with default dataset and categories
+    (function init() {
+      if (productData && productData.products) updateCategories(productData);
+      render();
+    })();
+  </script>
+</body>
+</html>
